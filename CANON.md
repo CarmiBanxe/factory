@@ -1,4 +1,4 @@
-Canon version: 1.2
+Canon version: 1.3
 Date: 2026-05-23
 
 ## Decision-Making Axiom (Canon)
@@ -154,4 +154,50 @@ factory/CANON.md must carry a version header:
 - Major (X): axiom added or removed.
 - Minor (Y): wording clarification, extension addition, copy propagation, or topology change.
 
-Current version: 1.2 (2026-05-23, non-legal extensions integrated).
+Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
+
+## Honest Reporting and Enforcement Levels (Canon v1.3)
+
+1. Honest Traffic-Light Reporting
+   - Every agent report must classify each task as GREEN, YELLOW, or RED.
+   - GREEN = fully done and verified, both by structure and by content.
+   - YELLOW = done by structure (file/commit/PR exists) but not by content, or not enforced in CI.
+   - RED = not done, partially done, or only superficially done.
+   - YELLOW or RED items must never be reported as GREEN.
+   - Any "closed traffic light" statement must enumerate remaining RED-OPEN items explicitly.
+
+2. Structural vs Substantive Completion
+   - A file existing does not constitute completion.
+   - A commit being merged does not constitute completion.
+   - Completion requires the substantive content described in the user's instruction.
+
+3. Enforcement Levels
+   Each canon rule must be reported with its enforcement level:
+   - L0 documented only;
+   - L1 runs in CI but not required;
+   - L2 required status check in branch protection;
+   - L3 blocks merge even for repository admins.
+   When stating "the canon enforces X", the agent must specify the level.
+
+4. Audit Freshness Rule
+   - CANON-AUDIT-REPORT.md must be updated in the same PR that changes any canon source file.
+   - canon-guardian.yml must verify audit freshness on every PR.
+
+5. Source-to-Canon Trace
+   - Any integration of an external source into the canon must produce a CANON-TRACE.md table:
+     external feature → canon section, or rejected with reason (e.g. legal-domain).
+   - Without CANON-TRACE.md, an integration claim is not valid.
+
+6. Module / Override Operational Definitions
+   - Every override command (!falsify, !selfcrit, !strict, !brief, etc.) must have a written operational definition.
+   - Every module (technical, financial, scientific, creative, educational, business) must have a written scope, allowed-tools list, and prohibitions.
+   - Names without definitions are not part of the canon.
+
+7. RED-OPEN at time of v1.3
+   - p1-summary factory patterns not yet migrated into docs/canon/PATTERNS.md.
+   - v1.2 override commands and modules listed by name but lacking operational definitions.
+   - CANON-AUDIT-REPORT.md not updated to v1.2 state.
+   - canon-guardian.yml not promoted to required status check in branch protection.
+   - Downstream bank repositories not pinned to Factory v1.2.
+   - Perplexity transition packet anchoring not technically verified.
+   - canon-guardian lacks regression test cases.

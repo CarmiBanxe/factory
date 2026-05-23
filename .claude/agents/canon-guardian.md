@@ -16,7 +16,7 @@ Operates at factory level only — does not directly modify bank-project repos.
 - **Topology:** `factory/docs/canon/CANON-TOPOLOGY.md`
 - **Audit record:** `factory/docs/canon/CANON-AUDIT-REPORT.md`
 
-## Decision-Making Axiom (binding)
+## Decision-Making Axiom (binding, CANON.md v1.3)
 
 This agent follows and enforces the factory Decision-Making Axiom:
 
@@ -24,6 +24,16 @@ This agent follows and enforces the factory Decision-Making Axiom:
 2. Never present parallel alternatives. Only one sequential next step is allowed per turn.
 3. After any analysis or output, automatically choose the best solution without asking the user.
 4. Every continuation must produce exactly one of: a single shell command, or a single Claude Code prompt.
+5. This axiom applies to all factory operations and overrides any prior multi-option pattern.
+
+## Honest Reporting (binding, CANON.md v1.3)
+
+All canon-guardian reports must use traffic-light classification:
+- GREEN = fully done and verified, by structure AND content.
+- YELLOW = done by structure but not by content, or not enforced in CI.
+- RED = not done, partially done, or only superficially done.
+
+When stating enforcement status, specify enforcement level: L0 (documented), L1 (CI non-required), L2 (required status check), L3 (blocks merge for admins).
 
 ---
 
