@@ -278,7 +278,7 @@ Status: DRIFT — BalanceCard props interface diverged between web and mobile.
 5. **Never weaken factory minimums.** Coverage threshold can be raised per-repo but never lowered below factory minimum (80%) without override.
 6. **Auto-fix where safe.** In worktree isolation mode, the agent may auto-fix: ruff format, token regeneration, proto-sync. It must NOT auto-fix: semgrep findings, test failures, type errors.
 
-## Decision-Making Axiom
+## Decision-Making Axiom (CANON.md v1.3)
 
 This agent follows the factory Decision-Making Axiom (see `factory/CANON.md`):
 
@@ -286,8 +286,13 @@ This agent follows the factory Decision-Making Axiom (see `factory/CANON.md`):
 2. Never present parallel alternatives. Only one sequential next step is allowed per turn.
 3. After any analysis or output, automatically choose the best solution without asking the user.
 4. Every continuation must produce exactly one of: a single shell command, or a single Claude Code prompt.
+5. This axiom applies to all factory operations and overrides any prior multi-option pattern.
 
 When multiple checks fail, prioritize by severity (CRITICAL > HIGH > MEDIUM) and output exactly one fix instruction for the highest-severity item. Do not list all fixes simultaneously.
+
+All watchdog reports must use traffic-light classification per CANON.md v1.3 §1:
+- GREEN = fully done and verified. YELLOW = structural only. RED = not done.
+- When reporting enforcement, specify level: L0/L1/L2/L3.
 
 ## Invocation
 

@@ -10,7 +10,7 @@
 
 | # | Path | Size | Type |
 |---|------|------|------|
-| 1 | `factory/CANON.md` | 510 B | Axiom definition |
+| 1 | `factory/CANON.md` | ~5K | Axiom + Extensions v1.2 + Honest Reporting v1.3 |
 | 2 | `factory/docs/factory/FACTORY-CANON-ADDENDUM-TERMINAL-B-AUTONOMY-2026-05-12.md` | 1.6K | Operational addendum |
 | 3 | `factory/.claude/settings.local.json` | 574 B | Permission config |
 | 4 | `factory/banxe-repo-template/README.md` | 1.3K | Template doc |
@@ -73,15 +73,15 @@ All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is
 
 ## 5. Weak Points
 
-1. **No dedicated canon-enforcement agent.** Factory-watchdog enforces quality and UI parity, but nobody enforces *canon document consistency* itself. If CANON.md changes, no agent verifies that copies in template README, Terminal-B addendum, and watchdog are updated.
+1. ~~**No dedicated canon-enforcement agent.**~~ **RESOLVED v1.0** — `factory/.claude/agents/canon-guardian.md` created with 4 modes.
 
-2. **`p1-summary.md` is mixed.** Contains bank-project implementation details (specific hooks for `banxe-payment-core`, subagents for `banxe-ui`) alongside factory-level patterns <!-- META-MENTION-OK -->. Should be split: factory patterns → `factory/docs/canon/`, bank-project specifics → respective repos.
+2. **`p1-summary.md` is mixed.** Contains bank-project implementation details (specific hooks for `banxe-payment-core`, subagents for `banxe-ui`) alongside factory-level patterns <!-- META-MENTION-OK -->. **RED-OPEN** per v1.3 §7: factory patterns not yet migrated into `docs/canon/PATTERNS.md`.
 
-3. **No canon versioning.** CANON.md has no version tag or date. Changes to the axiom are not tracked within the file itself.
+3. ~~**No canon versioning.**~~ **RESOLVED v1.0** — CANON.md carries `Canon version: 1.3, Date: 2026-05-23`.
 
-4. **No canon diff policy.** When CANON.md is updated, there is no defined propagation procedure to update all intentional copies.
+4. ~~**No canon diff policy.**~~ **RESOLVED v1.0** — CANON-TOPOLOGY.md §4 defines change procedure.
 
-5. **`style-dictionary.config.js` not in audit scope of any agent.** Factory-watchdog Mode 3 check #8 references it, but the watchdog agent spec doesn't have a check for JS config drift (only JSON was in original scope).
+5. **`style-dictionary.config.js` not in audit scope of any agent.** **YELLOW** — now listed in CANON-TOPOLOGY.md hierarchy, but factory-watchdog Mode 3 check #8 references it without explicit JS config drift verification logic.
 
 ## 6. Recommendations
 

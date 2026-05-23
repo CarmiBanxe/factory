@@ -1,10 +1,10 @@
-Canon version: 1.0
+Canon version: 1.3
 Date: 2026-05-23
 
 # Canon Topology — Factory Governance Structure
 
 **Date:** 2026-05-23
-**Authority:** `factory/CANON.md` (Decision-Making Axiom)
+**Authority:** `factory/CANON.md` v1.3 (Decision-Making Axiom + Extensions v1.2 + Honest Reporting v1.3)
 
 ---
 
@@ -28,7 +28,9 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 │   ├── factory/quality-core/semgrep/fintech-rules.yml
 │   ├── factory/quality-core/workflows/quality-gate.yml
 │   ├── factory/quality-core/workflows/lint-python.yml
-│   └── factory/ui-sync-core/tokens/banxe-tokens.json
+│   ├── factory/ui-sync-core/tokens/banxe-tokens.json
+│   ├── factory/ui-sync-core/tokens/style-dictionary.config.js
+│   └── factory/ui-sync-core/proto-sync.py
 │
 ├── DISTRIBUTION TEMPLATE (LEVEL 3)
 │   ├── factory/banxe-repo-template/README.md
@@ -109,4 +111,4 @@ Date: YYYY-MM-DD
 - Major (X): axiom added or removed.
 - Minor (Y): wording clarification, copy propagation, or topology change.
 
-Current version: **1.0** (2026-05-22, initial axiom).
+Current version: **1.3** (2026-05-23, honest reporting + enforcement levels).
