@@ -192,4 +192,3 @@ Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
 7. RED-OPEN at time of v1.3
    - Downstream bank repositories not pinned to Factory v1.2.
    - Perplexity transition packet anchoring not technically verified.
-   - canon-guardian lacks regression test cases.
