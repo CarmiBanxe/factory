@@ -46,7 +46,7 @@
 | rollout-v2-report.md | **primary** | — | — | — |
 | p1-summary.md | — | — | **mixed** | — |
 
-**Result:** 16 of 17 files are pure factory-governance. 1 file (`p1-summary.md`) is mixed — contains factory-level recommendations interleaved with bank-project-specific implementation details (hooks for `banxe-payment-core`, subagents for `banxe-ui`, MCPs for `banxe-infra`).
+**Result:** 16 of 17 files are pure factory-governance. 1 file (`p1-summary.md`) is mixed — contains factory-level recommendations interleaved with bank-project-specific implementation details (hooks for `banxe-payment-core`, subagents for `banxe-ui`, MCPs for `banxe-infra`). <!-- META-MENTION-OK -->
 
 ## 3. Conflict Map
 
@@ -75,7 +75,7 @@ All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is
 
 1. **No dedicated canon-enforcement agent.** Factory-watchdog enforces quality and UI parity, but nobody enforces *canon document consistency* itself. If CANON.md changes, no agent verifies that copies in template README, Terminal-B addendum, and watchdog are updated.
 
-2. **`p1-summary.md` is mixed.** Contains bank-project implementation details (specific hooks for `banxe-payment-core`, subagents for `banxe-ui`) alongside factory-level patterns. Should be split: factory patterns → `factory/docs/canon/`, bank-project specifics → respective repos.
+2. **`p1-summary.md` is mixed.** Contains bank-project implementation details (specific hooks for `banxe-payment-core`, subagents for `banxe-ui`) alongside factory-level patterns <!-- META-MENTION-OK -->. Should be split: factory patterns → `factory/docs/canon/`, bank-project specifics → respective repos.
 
 3. **No canon versioning.** CANON.md has no version tag or date. Changes to the axiom are not tracked within the file itself.
 

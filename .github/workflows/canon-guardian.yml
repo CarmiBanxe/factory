@@ -1,0 +1,75 @@
+name: Canon Guardian
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  axiom-consistency:
+    name: Axiom consistency + factory/project separation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify CANON.md version header
+        run: |
+          head -2 CANON.md | grep -q "^Canon version: " || (echo "::error::CANON.md missing version header"; exit 1)
+          head -2 CANON.md | grep -q "^Date: " || (echo "::error::CANON.md missing Date header"; exit 1)
+
+      - name: Verify .clauderules mirrors axiom
+        run: |
+          for n in 1 2 3 4 5; do
+            grep -q "^${n}\. " .clauderules || (echo "::error::.clauderules missing axiom rule ${n}"; exit 1)
+            grep -q "^${n}\. " CANON.md || (echo "::error::CANON.md missing axiom rule ${n}"; exit 1)
+          done
+
+      - name: Verify ADR-0001 exists and references CANON v1.2 or higher
+        run: |
+          test -f docs/adr/ADR-0001-decision-making-axiom.md || (echo "::error::ADR-0001 missing"; exit 1)
+          grep -qE "Canon version: 1\.[2-9]|Canon version: [2-9]" docs/adr/ADR-0001-decision-making-axiom.md \
+            || (echo "::error::ADR-0001 must reference Canon version >= 1.2"; exit 1)
+
+      - name: Forbid bank-project leaks in L0-L2 governance files
+        run: |
+          set -e
+          FILES="CANON.md .clauderules docs/canon/CANON-TOPOLOGY.md docs/canon/PATTERNS.md docs/adr/ADR-0001-decision-making-axiom.md .claude/agents/canon-guardian.md"
+          PATTERN="banxe-payment-core|banxe-ui|banxe-infra|apps/web|apps/mobile|pnpm |npx expo"
+          for f in $FILES; do
+            [ -f "$f" ] || continue
+            # Lines tagged with META-MENTION-OK are intentional meta-mentions (rules describing what is forbidden),
+            # not bank-project logic. They are allowed.
+            if grep -nE "$PATTERN" "$f" | grep -v "META-MENTION-OK" >/dev/null; then
+              echo "::error file=$f::bank-project leak detected in factory governance file"
+              grep -nE "$PATTERN" "$f" | grep -v "META-MENTION-OK"
+              exit 1
+            fi
+          done
+
+      - name: Forbid legal-domain modifiers in canon
+        run: |
+          set -e
+          FILES="CANON.md .clauderules docs/canon/CANON-TOPOLOGY.md docs/canon/PATTERNS.md docs/adr/ADR-0001-decision-making-axiom.md .claude/agents/canon-guardian.md"
+          for f in $FILES; do
+            [ -f "$f" ] || continue
+            if grep -nE "!eucourt|!echrsearch|!cjeusearch|!ultralegal|!legalqa|ratio decidendi|dispositif|Plan 7|CURIA|HUDOC|EUR-Lex" "$f" >/dev/null; then
+              if ! grep -nE "Forbidden modifiers|Forbidden modules|Non-legal scope|excluded from" "$f" >/dev/null; then
+                echo "::error file=$f::legal-domain content found outside an explicit non-legal exclusion block"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Verify single-source axiom matches across controlled copies
+        run: |
+          set -e
+          axiom_canon=$(awk '/^## Decision-Making Axiom \(Canon\)/{flag=1; next} /^## /{flag=0} flag' CANON.md | sed -n '1,12p')
+          axiom_rules=$(awk '/^## Decision-Making Axiom \(Canon\)/{flag=1; next} /^## /{flag=0} flag' .clauderules | sed -n '1,12p')
+          if [ "$axiom_canon" != "$axiom_rules" ]; then
+            echo "::error::Axiom drift between CANON.md and .clauderules"
+            diff <(printf '%s\n' "$axiom_canon") <(printf '%s\n' "$axiom_rules") || true
+            exit 1
+          fi
