@@ -75,7 +75,7 @@ All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is
 
 1. ~~**No dedicated canon-enforcement agent.**~~ **RESOLVED v1.0** — `factory/.claude/agents/canon-guardian.md` created with 4 modes.
 
-2. **`p1-summary.md` is mixed.** Contains bank-project implementation details (specific hooks for `banxe-payment-core`, subagents for `banxe-ui`) alongside factory-level patterns <!-- META-MENTION-OK -->. **RED-OPEN** per v1.3 §7: factory patterns not yet migrated into `docs/canon/PATTERNS.md`.
+2. ~~**`p1-summary.md` is mixed.**~~ **RESOLVED v1.3** — bank-specifics frozen at `docs/history/p1-summary-bank.md` <!-- META-MENTION-OK -->; factory-level patterns migrated into `docs/canon/PATTERNS.md` (hook, subagent, CI workflow, MCP, skill, PR review patterns; each anchored to a CANON.md v1.3 section).
 
 3. ~~**No canon versioning.**~~ **RESOLVED v1.0** — CANON.md carries `Canon version: 1.3, Date: 2026-05-23`.
 

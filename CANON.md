@@ -194,10 +194,7 @@ Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
    - Names without definitions are not part of the canon.
 
 7. RED-OPEN at time of v1.3
-   - p1-summary factory patterns not yet migrated into docs/canon/PATTERNS.md.
    - v1.2 override commands and modules listed by name but lacking operational definitions.
-   - CANON-AUDIT-REPORT.md not updated to v1.2 state.
-   - canon-guardian.yml not promoted to required status check in branch protection.
    - Downstream bank repositories not pinned to Factory v1.2.
    - Perplexity transition packet anchoring not technically verified.
    - canon-guardian lacks regression test cases.
