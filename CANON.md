@@ -73,22 +73,18 @@ Before every reply, the agent must verify in order:
 
 ### 10. Override commands (non-legal)
 
-Allowed modifiers (режимные тумблеры), may strengthen the axiom, never weaken it:
+Override commands (режимные тумблеры) may strengthen the axiom, never weaken it.
+Canonical operational definitions live in `docs/canon/OVERRIDES.md` (31 commands, anchored to this canon v1.3).
+Names without operational definitions are not part of the canon (v1.3 §6).
 
-!reset, !savestate, !loadstate, !deepanalysis, !ultradeep, !factcheck, !biascheck,
-!logiccheck, !consistency, !gapsanalysis, !assumptions, !implications, !alternatives,
-!edgecases, !worstcase, !bestcase, !riskassessment, !opportunityscan, !strategicview,
-!tacticalplan, !implementation, !monitoring, !iterate, !validate, !document,
-!visualize, !simplify, !strict, !falsify, !brief, !selfcrit
-
-Forbidden modifiers: any legal-domain or court-search override (!eucourt, !echrsearch,
-!cjeusearch, !academic-legal, !ultralegal, !legalqa, !ultralegalstrategy).
+Forbidden modifiers: any legal-domain or court-search override (!eucourt, !echrsearch, !cjeusearch, !academic-legal, !ultralegal, !legalqa, !ultralegalstrategy).
 
 ### 11. Module loader (optional, non-legal)
 
-Allowed optional modules: technical, financial, scientific, creative, educational, business.
+Optional capability modules. Canonical operational definitions live in `docs/canon/MODULES.md` (6 modules: technical, financial, scientific, creative, educational, business; each with scope, allowed-tools, prohibitions, enforcement level).
 Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal.
 Any module load/unload/update must be reported.
+Names without operational definitions are not part of the canon (v1.3 §6).
 
 ### 12. Self-Critique by default
 
@@ -194,7 +190,6 @@ Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
    - Names without definitions are not part of the canon.
 
 7. RED-OPEN at time of v1.3
-   - v1.2 override commands and modules listed by name but lacking operational definitions.
    - Downstream bank repositories not pinned to Factory v1.2.
    - Perplexity transition packet anchoring not technically verified.
    - canon-guardian lacks regression test cases.
