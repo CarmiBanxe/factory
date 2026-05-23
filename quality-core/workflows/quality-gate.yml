@@ -1,0 +1,180 @@
+# Factory Quality Gate — canonical workflow template
+# Source: banxe-emi-stack/.github/workflows/quality-gate.yml (generalized 2026-05-22)
+# Canon: factory/quality-core/ (factory-watchdog Mode 3 drift-checks this file)
+#
+# Per-repo usage: copy to .github/workflows/quality-gate.yml
+# Parameterized via repository variables (vars.*) and structure detection.
+# Semgrep uses factory fintech-rules core, not repo-local rules.
+
+name: Quality Gate — ${{ github.event.repository.name }}
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── P0 Security: Secrets Scan ─────────────────────────────────────────────
+  secrets-scan:
+    name: Gitleaks — Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz -C /tmp
+      - name: Run gitleaks
+        run: |
+          /tmp/gitleaks detect --source . --report-format sarif --report-path gitleaks.sarif --redact --exit-code 0 --no-banner
+          test -s gitleaks.sarif || echo '{"version":"2.1.0","runs":[]}' > gitleaks.sarif
+      - name: Upload SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-sarif
+          path: gitleaks.sarif
+          if-no-files-found: warn
+
+  # ── Python: Ruff Lint + Format ────────────────────────────────────────────
+  ruff:
+    name: Ruff lint + format
+    runs-on: ubuntu-latest
+    if: hashFiles('**/*.py') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ruff lint (GitHub annotations)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --output-format=github"
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
+  # ── Frontend: Biome Lint + Format ─────────────────────────────────────────
+  biome:
+    name: Biome lint + format (Frontend)
+    runs-on: ubuntu-latest
+    if: hashFiles('frontend/package.json') != '' || hashFiles('apps/web/package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Detect frontend directory
+        id: fe-dir
+        run: |
+          if [ -d "frontend" ]; then echo "dir=frontend" >> "$GITHUB_OUTPUT"
+          elif [ -d "apps/web" ]; then echo "dir=apps/web" >> "$GITHUB_OUTPUT"
+          else echo "dir=." >> "$GITHUB_OUTPUT"; fi
+      - name: Install frontend deps
+        working-directory: ${{ steps.fe-dir.outputs.dir }}
+        run: npm install --legacy-peer-deps
+      - name: Biome CI
+        uses: biomejs/setup-biome@v2
+        with:
+          version: 2.3.0
+      - name: Run Biome lint
+        working-directory: ${{ steps.fe-dir.outputs.dir }}
+        run: biome lint --reporter=github .
+      - name: Run Biome format check
+        working-directory: ${{ steps.fe-dir.outputs.dir }}
+        run: biome format .
+        continue-on-error: true
+
+  # ── Python: Tests + Coverage ──────────────────────────────────────────────
+  test:
+    name: "Pytest (coverage >= ${{ vars.COVERAGE_MIN || '80' }}%)"
+    runs-on: ubuntu-latest
+    if: hashFiles('**/*.py') != ''
+    needs: [ruff]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e ".[dev]" 2>/dev/null || true; fi
+          pip install pytest pytest-cov pytest-asyncio ruff semgrep mypy
+      - name: mypy type check
+        run: |
+          # Auto-detect source directories
+          for d in src services api agents; do
+            if [ -d "$d" ]; then python -m mypy "$d" --ignore-missing-imports --no-error-summary; fi
+          done
+      - name: Pytest with coverage
+        run: |
+          # Auto-detect coverage source directories
+          COV_ARGS=""
+          for d in src services api agents; do
+            if [ -d "$d" ]; then COV_ARGS="$COV_ARGS --cov=$d"; fi
+          done
+          python -m pytest tests/ -v --tb=short \
+            $COV_ARGS \
+            --cov-report=xml --cov-report=term-missing \
+            --cov-fail-under=${{ vars.COVERAGE_MIN || '80' }}
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "All tests passed (coverage >= ${{ vars.COVERAGE_MIN || '80' }}%)" >> $GITHUB_STEP_SUMMARY
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  # ── Semgrep: Factory Fintech Rules ────────────────────────────────────────
+  semgrep:
+    name: Semgrep (factory fintech-rules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install semgrep
+        run: pip install semgrep
+      - name: Fetch factory fintech-rules
+        run: |
+          mkdir -p .factory-semgrep
+          # Primary: download from factory quality-core (GitHub raw or local)
+          if [ -f "../factory/quality-core/semgrep/fintech-rules.yml" ]; then
+            cp ../factory/quality-core/semgrep/fintech-rules.yml .factory-semgrep/
+          else
+            # Fallback: fetch from factory repo on GitHub
+            curl -sSL "https://raw.githubusercontent.com/${{ github.repository_owner }}/factory/main/quality-core/semgrep/fintech-rules.yml" \
+              -o .factory-semgrep/fintech-rules.yml
+          fi
+      - name: Run Semgrep (factory rules)
+        run: semgrep --config .factory-semgrep/fintech-rules.yml --error
+      - name: Run Semgrep (repo-local rules, if any)
+        run: |
+          if [ -d ".semgrep" ]; then
+            semgrep --config .semgrep/ --error
+          fi
+
+  # ── Frontend: Tests ───────────────────────────────────────────────────────
+  vitest:
+    name: Vitest (frontend)
+    runs-on: ubuntu-latest
+    if: hashFiles('frontend/package.json') != '' || hashFiles('apps/web/package.json') != ''
+    needs: [biome]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Detect frontend directory
+        id: fe-dir
+        run: |
+          if [ -d "frontend" ]; then echo "dir=frontend" >> "$GITHUB_OUTPUT"
+          elif [ -d "apps/web" ]; then echo "dir=apps/web" >> "$GITHUB_OUTPUT"
+          else echo "dir=." >> "$GITHUB_OUTPUT"; fi
+      - name: Install frontend deps
+        working-directory: ${{ steps.fe-dir.outputs.dir }}
+        run: npm install --legacy-peer-deps
+      - name: Run Vitest
+        working-directory: ${{ steps.fe-dir.outputs.dir }}
+        run: npm run test
+        continue-on-error: true

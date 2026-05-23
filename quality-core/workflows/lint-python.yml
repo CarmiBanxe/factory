@@ -1,0 +1,67 @@
+# Factory Lint Python — canonical workflow template
+# Source: banxe-emi-stack/.github/workflows/lint-python.yml (generalized 2026-05-22)
+# Canon: factory/quality-core/ (factory-watchdog Mode 3 drift-checks this file)
+#
+# Dedicated Python linting — runs faster than full quality-gate.
+# Semgrep uses factory fintech-rules core + repo-local rules as supplement.
+
+name: Lint Python — ${{ github.event.repository.name }}
+
+on:
+  push:
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - ".github/workflows/lint-python.yml"
+  pull_request:
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  ruff:
+    name: Ruff lint + format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ruff lint (check mode, GitHub annotations)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --output-format=github"
+      - name: Ruff format (check only)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
+  semgrep:
+    name: Semgrep (factory fintech-rules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install semgrep
+        run: pip install semgrep
+      - name: Fetch factory fintech-rules
+        run: |
+          mkdir -p .factory-semgrep
+          if [ -f "../factory/quality-core/semgrep/fintech-rules.yml" ]; then
+            cp ../factory/quality-core/semgrep/fintech-rules.yml .factory-semgrep/
+          else
+            curl -sSL "https://raw.githubusercontent.com/${{ github.repository_owner }}/factory/main/quality-core/semgrep/fintech-rules.yml" \
+              -o .factory-semgrep/fintech-rules.yml
+          fi
+      - name: Run Semgrep (factory rules)
+        run: semgrep --config .factory-semgrep/fintech-rules.yml --error --sarif-output=semgrep.sarif
+      - name: Run Semgrep (repo-local rules, if any)
+        run: |
+          if [ -d ".semgrep" ]; then
+            semgrep --config .semgrep/ --error
+          fi
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif

@@ -1,0 +1,209 @@
+# factory/quality-core — Generic fintech/security Semgrep rules
+#
+# Extracted from: banxe-emi-stack/.semgrep/banxe-rules.yml (2026-05-22)
+# Source: canon-v1.36
+#
+# These rules are reusable across ALL factory repos.
+# EMI-specific rules (DB table references, service-path scoping) are excluded
+# and remain in banxe-emi-stack as adapter-local rules.
+#
+# Usage in workflow:
+#   semgrep --config factory/quality-core/semgrep/fintech-rules.yml .
+
+rules:
+  # ── Secrets & Credentials ─────────────────────────────────────────────────
+
+  - id: fintech-hardcoded-secret
+    patterns:
+      - pattern-either:
+          - pattern: $KEY = "sk-..."
+          - pattern: $KEY = "sk_..."
+          - pattern: $KEY = "BSADQ..."
+          - pattern: token = "..."
+          - pattern: api_key = "..."
+          - pattern: password = "..."
+    message: |
+      Hardcoded secret/token/password detected. Use environment variables
+      or a secrets manager. FCA requires credential protection.
+    languages: [python, javascript, bash]
+    severity: ERROR
+
+  - id: fintech-no-plain-password
+    patterns:
+      - pattern-either:
+          - pattern: password = $X
+          - pattern: passwd = $X
+          - pattern: secret = $X
+    message: |
+      Do not store passwords/secrets in variables with predictable names.
+      Use a secrets manager or environment variable reference.
+    languages: [javascript, python, bash]
+    severity: WARNING
+
+  - id: fintech-iam-no-direct-creds-yaml
+    pattern-regex: '^\s*(password|client_secret|db_password|secret_key|auth_token|access_token|private_key)\s*:\s*"[^"$<{]{6,}"'
+    paths:
+      include:
+        - "*.yaml"
+        - "*.yml"
+      exclude:
+        - ".semgrep/**"
+        - "tests/**"
+        - "node_modules/**"
+    message: |
+      Direct credential value in YAML config. Credential keys (password,
+      client_secret, db_password, secret_key, auth_token, access_token,
+      private_key) must reference env vars (${VAR}) or placeholders.
+    languages: [generic]
+    severity: ERROR
+
+  - id: fintech-iam-no-direct-creds-json
+    pattern-regex: '"(password|client_secret|db_password|secret_key|auth_token|access_token|private_key)"\s*:\s*"[^"$<{]{6,}"'
+    paths:
+      include:
+        - "*.json"
+      exclude:
+        - ".semgrep/**"
+        - "tests/**"
+        - "node_modules/**"
+        - "package.json"
+        - "package-lock.json"
+        - "*.lock"
+    message: |
+      Direct credential value in JSON config. Credential keys must
+      reference env vars or placeholders, not literal values.
+    languages: [generic]
+    severity: ERROR
+
+  # ── Injection ─────────────────────────────────────────────────────────────
+
+  - id: fintech-sql-injection-python
+    patterns:
+      - pattern-either:
+          - pattern: f"SELECT ... {$VAR} ..."
+          - pattern: f"INSERT ... {$VAR} ..."
+          - pattern: f"DELETE ... {$VAR} ..."
+    message: |
+      Possible SQL injection via f-string interpolation (Python).
+      Use parameterized queries.
+    languages: [python]
+    severity: ERROR
+
+  - id: fintech-sql-injection-javascript
+    pattern: |
+      `SELECT ... ${$VAR}`
+    message: |
+      Possible SQL injection via template literal (JS).
+      Use parameterized queries.
+    languages: [javascript]
+    severity: ERROR
+
+  - id: fintech-unsafe-eval
+    pattern: eval($X)
+    message: |
+      eval() is forbidden in production code — risk of code injection.
+    languages: [javascript, python]
+    severity: ERROR
+
+  - id: fintech-shell-injection
+    patterns:
+      - pattern-either:
+          - pattern: os.system(f"... {$VAR} ...")
+          - pattern: subprocess.call(f"... {$VAR} ...", shell=True)
+    message: |
+      Shell injection risk — do not use shell=True with user-controlled input.
+      Use subprocess.run() with a list of arguments instead.
+    languages: [python]
+    severity: ERROR
+
+  # ── Financial Precision ───────────────────────────────────────────────────
+
+  - id: fintech-float-money
+    # Targets float usage on monetary variables only.
+    # Non-monetary contexts (timeouts, scores, weights, etc.) are excluded
+    # via metavariable-regex on the variable name receiving the float value.
+    patterns:
+      - pattern-either:
+          # Python: float() assigned to a monetary-named variable
+          - pattern: $X = float($AMOUNT)
+          # Python: float() returned (caller context unknown — keep conservative)
+          - pattern: return float($AMOUNT)
+          # JS: parseFloat assigned to a monetary-named variable
+          - pattern: $X = parseFloat($AMOUNT)
+          # JS: parseFloat returned
+          - pattern: return parseFloat($AMOUNT)
+          # Worst case: Decimal constructed from float loses precision
+          - pattern: Decimal(float($AMOUNT))
+      - metavariable-regex:
+          metavariable: $X
+          regex: '(?i).*(amount|balance|fee|price|cost|total|subtotal|sum|payment|payout|refund|credit|debit|money|value|revenue|income|expense|salary|wage|tax|vat|commission|markup|discount|charge|deposit|withdrawal|transfer|remittance|settlement|ledger|invoice|billing).*'
+    message: |
+      Float used for monetary calculation — precision loss risk.
+      Use Decimal (Python) or BigInt/specialized libraries (JS).
+      If this variable is genuinely non-monetary, rename it to avoid
+      monetary keywords or add a # nosemgrep comment with justification.
+    languages: [javascript, python]
+    severity: ERROR
+
+  - id: fintech-float-money-decimal-wrap
+    # Separate rule for Decimal(float(...)) — always wrong regardless of variable name.
+    # Constructing Decimal from float defeats the purpose of Decimal precision.
+    pattern: Decimal(float($AMOUNT))
+    message: |
+      Decimal(float(...)) loses precision before Decimal receives the value.
+      Use Decimal(str(...)) or Decimal($AMOUNT) directly.
+    languages: [python]
+    severity: ERROR
+
+  # ── PII / GDPR ───────────────────────────────────────────────────────────
+
+  - id: fintech-log-pii
+    patterns:
+      - pattern: logger.$LEVEL($FMT, ..., $OBJ.$ATTR, ...)
+      - metavariable-regex:
+          metavariable: $ATTR
+          regex: '^(iban|pan|card_number|card_pan|account_number|sort_code|ssn|national_id|passport_number|date_of_birth|dob|full_name|email|phone|mobile|address|postcode)$'
+    message: |
+      Possible PII leak in logs (IBAN/PAN/SSN/etc.) — GDPR violation.
+      Mask or redact PII before logging.
+    languages: [python]
+    severity: ERROR
+
+  # ── Audit Trail Integrity ─────────────────────────────────────────────────
+
+  - id: fintech-clickhouse-ttl-reduce
+    pattern-regex: 'TTL\s+\w+\s*\+\s*INTERVAL\s+\d+\s+DAY'
+    message: |
+      ClickHouse TTL detected. FCA audit trail minimum is 5 years (1825 days).
+      Verify the value — do not reduce existing TTL below regulatory minimum.
+    languages: [generic]
+    severity: WARNING
+
+  # ── AI/MCP Tool Safety ────────────────────────────────────────────────────
+
+  - id: fintech-mcp-tool-must-have-docstring
+    patterns:
+      - pattern: |
+          @$SERVER.tool(...)
+          async def $FUNC(...):
+              ...
+      - pattern-not: |
+          @$SERVER.tool(...)
+          async def $FUNC(...):
+              """..."""
+              ...
+    message: |
+      MCP tool $FUNC is missing a docstring. Docstrings are mandatory —
+      they are exposed to AI agents as tool descriptions.
+      Add: """Short description.\n\nArgs:\n    param: description"""
+    languages: [python]
+    severity: ERROR
+
+  - id: fintech-mcp-no-raw-exception
+    pattern: raise Exception(...)
+    message: |
+      MCP code raises raw Exception() — use typed errors instead.
+      Prefer: httpx.HTTPStatusError, ValueError, RuntimeError, or a custom
+      domain exception. Raw Exception breaks agent error handling.
+    languages: [python]
+    severity: ERROR
