@@ -73,3 +73,76 @@ jobs:
             diff <(printf '%s\n' "$axiom_canon") <(printf '%s\n' "$axiom_rules") || true
             exit 1
           fi
+
+      # ── v1.3 enforcement checks (7–15) ────────────────────────────────────
+
+      - name: "Check 7: OVERRIDES.md exists with ≥31 override definitions"
+        run: |
+          set -euo pipefail
+          test -f docs/canon/OVERRIDES.md || (echo "::error file=docs/canon/OVERRIDES.md::OVERRIDES.md missing (v1.3 §6)"; exit 1)
+          COUNT=$(grep -c '^## !' docs/canon/OVERRIDES.md || true)
+          [ "$COUNT" -ge 31 ] || (echo "::error file=docs/canon/OVERRIDES.md::Expected ≥31 override definitions (^## !), found $COUNT (v1.3 §6)"; exit 1)
+
+      - name: "Check 8: MODULES.md exists with ≥6 module definitions"
+        run: |
+          set -euo pipefail
+          test -f docs/canon/MODULES.md || (echo "::error file=docs/canon/MODULES.md::MODULES.md missing (v1.3 §6)"; exit 1)
+          TOTAL=$(grep -c '^## ' docs/canon/MODULES.md || true)
+          META=$(grep -cE '^## (Format|Common|Forbidden|Anchoring|Combination)' docs/canon/MODULES.md || true)
+          EFFECTIVE=$((TOTAL - META))
+          [ "$EFFECTIVE" -ge 6 ] || (echo "::error file=docs/canon/MODULES.md::Expected ≥6 module definitions, found $EFFECTIVE (v1.3 §6)"; exit 1)
+
+      - name: "Check 9: PATTERNS.md exists and is non-empty"
+        run: |
+          set -euo pipefail
+          test -f docs/canon/PATTERNS.md || (echo "::error file=docs/canon/PATTERNS.md::PATTERNS.md missing (v1.3 §7)"; exit 1)
+          test -s docs/canon/PATTERNS.md || (echo "::error file=docs/canon/PATTERNS.md::PATTERNS.md is empty (v1.3 §7)"; exit 1)
+
+      - name: "Check 10: CANON-TRACE.md exists and references both integration sources"
+        run: |
+          set -euo pipefail
+          test -f docs/canon/CANON-TRACE.md || (echo "::error file=docs/canon/CANON-TRACE.md::CANON-TRACE.md missing (v1.3 §5)"; exit 1)
+          grep -q "CORE v4.11.1" docs/canon/CANON-TRACE.md || (echo "::error file=docs/canon/CANON-TRACE.md::Missing CORE v4.11.1 reference"; exit 1)
+          grep -q "Universalnyi v4.15.1" docs/canon/CANON-TRACE.md || (echo "::error file=docs/canon/CANON-TRACE.md::Missing Universalnyi v4.15.1 reference"; exit 1)
+
+      - name: "Check 11: CANON-TOPOLOGY.md version matches CANON.md"
+        run: |
+          set -euo pipefail
+          VER_CANON=$(grep -m1 '^Canon version: ' CANON.md | sed 's/^Canon version: //')
+          VER_TOPO=$(grep -m1 '^Canon version: ' docs/canon/CANON-TOPOLOGY.md | sed 's/^Canon version: //')
+          [ "$VER_CANON" = "$VER_TOPO" ] || (echo "::error file=docs/canon/CANON-TOPOLOGY.md::Version mismatch: CANON.md=$VER_CANON, TOPOLOGY=$VER_TOPO"; exit 1)
+
+      - name: "Check 12: CANON-AUDIT-REPORT.md freshness (v1.3 §4)"
+        run: |
+          set -euo pipefail
+          VER_CANON=$(grep -m1 '^Canon version: ' CANON.md | sed 's/^Canon version: //')
+          grep -q "Canon version: ${VER_CANON}" docs/canon/CANON-AUDIT-REPORT.md \
+            || (echo "::error file=docs/canon/CANON-AUDIT-REPORT.md::Audit report not updated to Canon v${VER_CANON} (v1.3 §4 Audit Freshness Rule)"; exit 1)
+
+      - name: "Check 13: Controlled extensions anchored to v1.3+"
+        run: |
+          set -euo pipefail
+          for f in .claude/agents/canon-guardian.md quality-core/.claude/agents/factory-watchdog.md; do
+            [ -f "$f" ] || (echo "::error file=$f::File missing"; exit 1)
+            grep -qE "CANON\.md v1\.[3-9]|CANON\.md v[2-9]" "$f" \
+              || (echo "::error file=$f::Controlled extension not anchored to CANON.md v1.3+ (propagation required)"; exit 1)
+          done
+
+      - name: "Check 14: Forbidden overrides mirrored in OVERRIDES.md"
+        run: |
+          set -euo pipefail
+          FORBIDDEN=$(awk '/^Forbidden modifiers:/{flag=1} flag && /!/{print; next} flag && /^$/{flag=0}' CANON.md | grep -oE '![a-z][a-z-]+' | sort -u)
+          for cmd in $FORBIDDEN; do
+            grep -q "$cmd" docs/canon/OVERRIDES.md \
+              || (echo "::error file=docs/canon/OVERRIDES.md::Forbidden modifier $cmd from CANON.md §10 not mirrored in OVERRIDES.md"; exit 1)
+          done
+
+      - name: "Check 15: Forbidden modules mirrored in MODULES.md"
+        run: |
+          set -euo pipefail
+          FORBIDDEN_LINE=$(grep -m1 '^Forbidden modules:' CANON.md)
+          FORBIDDEN=$(echo "$FORBIDDEN_LINE" | sed 's/^Forbidden modules://' | tr ',' '\n' | sed 's/[. ]//g' | sort -u | grep -v '^$')
+          for mod in $FORBIDDEN; do
+            grep -qi "$mod" docs/canon/MODULES.md \
+              || (echo "::error file=docs/canon/MODULES.md::Forbidden module '$mod' from CANON.md §11 not mirrored in MODULES.md"; exit 1)
+          done
