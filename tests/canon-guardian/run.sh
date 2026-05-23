@@ -63,6 +63,77 @@ run_guardian_checks() {
     [ "$axiom_canon" = "$axiom_rules" ] || rc=1
   fi
 
+  # 7. OVERRIDES.md exists with ≥31 override definitions
+  test -f docs/canon/OVERRIDES.md || rc=1
+  if [ -f docs/canon/OVERRIDES.md ]; then
+    local ov_count
+    ov_count=$(grep -c '^## !' docs/canon/OVERRIDES.md 2>/dev/null || true)
+    [ "$ov_count" -ge 31 ] || rc=1
+  fi
+
+  # 8. MODULES.md exists with ≥6 module definitions
+  test -f docs/canon/MODULES.md || rc=1
+  if [ -f docs/canon/MODULES.md ]; then
+    local mod_total mod_meta mod_effective
+    mod_total=$(grep -c '^## ' docs/canon/MODULES.md 2>/dev/null || true)
+    mod_meta=$(grep -cE '^## (Format|Common|Forbidden|Anchoring|Combination)' docs/canon/MODULES.md 2>/dev/null || true)
+    mod_effective=$((mod_total - mod_meta))
+    [ "$mod_effective" -ge 6 ] || rc=1
+  fi
+
+  # 9. PATTERNS.md exists and is non-empty
+  test -f docs/canon/PATTERNS.md || rc=1
+  test -s docs/canon/PATTERNS.md 2>/dev/null || rc=1
+
+  # 10. CANON-TRACE.md exists and references both integration sources
+  test -f docs/canon/CANON-TRACE.md || rc=1
+  if [ -f docs/canon/CANON-TRACE.md ]; then
+    grep -q "CORE v4.11.1" docs/canon/CANON-TRACE.md 2>/dev/null || rc=1
+    grep -q "Universalnyi v4.15.1" docs/canon/CANON-TRACE.md 2>/dev/null || rc=1
+  fi
+
+  # 11. CANON-TOPOLOGY.md version matches CANON.md
+  if [ -f docs/canon/CANON-TOPOLOGY.md ]; then
+    local ver_canon ver_topo
+    ver_canon=$(grep -m1 '^Canon version: ' CANON.md 2>/dev/null | sed 's/^Canon version: //')
+    ver_topo=$(grep -m1 '^Canon version: ' docs/canon/CANON-TOPOLOGY.md 2>/dev/null | sed 's/^Canon version: //')
+    [ "$ver_canon" = "$ver_topo" ] || rc=1
+  fi
+
+  # 12. CANON-AUDIT-REPORT.md freshness
+  if [ -f docs/canon/CANON-AUDIT-REPORT.md ]; then
+    local ver_canon_fr
+    ver_canon_fr=$(grep -m1 '^Canon version: ' CANON.md 2>/dev/null | sed 's/^Canon version: //')
+    grep -q "Canon version: ${ver_canon_fr}" docs/canon/CANON-AUDIT-REPORT.md 2>/dev/null || rc=1
+  fi
+
+  # 13. Controlled extensions anchored to v1.3+
+  for f in .claude/agents/canon-guardian.md quality-core/.claude/agents/factory-watchdog.md; do
+    [ -f "$f" ] || rc=1
+    if [ -f "$f" ]; then
+      grep -qE "CANON\.md v1\.[3-9]|CANON\.md v[2-9]" "$f" 2>/dev/null || rc=1
+    fi
+  done
+
+  # 14. Forbidden overrides mirrored in OVERRIDES.md
+  if [ -f CANON.md ] && [ -f docs/canon/OVERRIDES.md ]; then
+    local forbidden_cmds
+    forbidden_cmds=$(awk '/^Forbidden modifiers:/{flag=1} flag && /!/{print; next} flag && /^$/{flag=0}' CANON.md | grep -oE '![a-z][a-z-]+' | sort -u)
+    for cmd in $forbidden_cmds; do
+      grep -q "$cmd" docs/canon/OVERRIDES.md 2>/dev/null || rc=1
+    done
+  fi
+
+  # 15. Forbidden modules mirrored in MODULES.md
+  if [ -f CANON.md ] && [ -f docs/canon/MODULES.md ]; then
+    local forbidden_line forbidden_mods
+    forbidden_line=$(grep -m1 '^Forbidden modules:' CANON.md 2>/dev/null)
+    forbidden_mods=$(echo "$forbidden_line" | sed 's/^Forbidden modules://' | tr ',' '\n' | sed 's/[. ]//g' | sort -u | grep -v '^$')
+    for mod in $forbidden_mods; do
+      grep -qi "$mod" docs/canon/MODULES.md 2>/dev/null || rc=1
+    done
+  fi
+
   return $rc
 }
 

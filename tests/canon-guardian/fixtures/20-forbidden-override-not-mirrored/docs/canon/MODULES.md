@@ -1,0 +1,14 @@
+# Modules
+Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal.
+## technical
+Scope: tech
+## financial
+Scope: fin
+## scientific
+Scope: sci
+## creative
+Scope: cre
+## educational
+Scope: edu
+## business
+Scope: biz
