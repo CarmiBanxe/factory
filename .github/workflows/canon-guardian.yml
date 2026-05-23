@@ -37,11 +37,14 @@ jobs:
         run: |
           set -e
           FILES="CANON.md .clauderules docs/canon/CANON-TOPOLOGY.md docs/canon/PATTERNS.md docs/adr/ADR-0001-decision-making-axiom.md .claude/agents/canon-guardian.md"
+          PATTERN="banxe-payment-core|banxe-ui|banxe-infra|apps/web|apps/mobile|pnpm |npx expo"
           for f in $FILES; do
             [ -f "$f" ] || continue
-            if grep -nE "banxe-payment-core|banxe-ui|banxe-infra|apps/web|apps/mobile|pnpm |npx expo" "$f" >/dev/null; then
+            # Lines tagged with META-MENTION-OK are intentional meta-mentions (rules describing what is forbidden),
+            # not bank-project logic. They are allowed.
+            if grep -nE "$PATTERN" "$f" | grep -v "META-MENTION-OK" >/dev/null; then
               echo "::error file=$f::bank-project leak detected in factory governance file"
-              grep -nE "banxe-payment-core|banxe-ui|banxe-infra|apps/web|apps/mobile|pnpm |npx expo" "$f"
+              grep -nE "$PATTERN" "$f" | grep -v "META-MENTION-OK"
               exit 1
             fi
           done

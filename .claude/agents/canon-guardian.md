@@ -98,7 +98,7 @@ When a new file is added to `factory/` or when `p1-summary.md`-style mixed docum
 
 | # | Check | Method | Pass |
 |---|-------|--------|------|
-| 1 | No bank-project-specific logic in factory governance files | grep for repo-specific names (banxe-payment-core, banxe-ui, banxe-infra) in Level 0-2 files | zero matches in non-report files |
+| 1 | No bank-project-specific logic in factory governance files | grep for repo-specific names (banxe-payment-core, banxe-ui, banxe-infra) in Level 0-2 files <!-- META-MENTION-OK --> | zero matches in non-report files |
 | 2 | No factory axioms in bank-project repos | factory axiom should only appear via template bootstrap, not ad-hoc insertion | template-distributed only |
 | 3 | Mixed files identified | any file classified as "mixed" in CANON-TOPOLOGY.md | zero (all resolved or explicitly marked) |
 
