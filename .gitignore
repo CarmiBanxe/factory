@@ -1,0 +1,9 @@
+# Operational / historical artifacts — out of canon scope per CANON-AUDIT-REPORT.md
+p1-summary.md
+rollout-v2-report.md
+rollout-v2-results.tsv
+rollout-v2.sh
+set-guardian-secrets.sh
+
+# Nested repo (own commit boundary)
+banxe-repo-template/
