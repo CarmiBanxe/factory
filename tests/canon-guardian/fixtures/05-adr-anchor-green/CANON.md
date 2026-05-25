@@ -14,3 +14,7 @@ Date: 2026-05-23
 Forbidden modifiers: !eucourt, !echrsearch, !cjeusearch, !academic-legal, !ultralegal, !legalqa, !ultralegalstrategy
 
 Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal.
+### 1. Pre-output lock (CANON-PREFLIGHT)
+### 12. Self-Critique by default
+### 4. Decision-Brief (internal)
+### 8. Plan-Risk-Block

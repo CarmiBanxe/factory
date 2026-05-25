@@ -134,6 +134,22 @@ run_guardian_checks() {
     done
   fi
 
+  # 16. Pre-output lock (A1) present in CANON.md and .clauderules
+  grep -q "Pre-output lock" CANON.md 2>/dev/null || rc=1
+  grep -qi "pre-output lock" .clauderules 2>/dev/null || rc=1
+
+  # 17. Self-Critique (A5) present in CANON.md and .clauderules
+  grep -q "Self-Critique" CANON.md 2>/dev/null || rc=1
+  grep -qi "self-critique" .clauderules 2>/dev/null || rc=1
+
+  # 18. Decision-Brief (A6) present in CANON.md and .clauderules
+  grep -q "Decision-Brief" CANON.md 2>/dev/null || rc=1
+  grep -qi "decision-brief" .clauderules 2>/dev/null || rc=1
+
+  # 19. Plan-Risk-Block (A7) present in CANON.md and .clauderules
+  grep -q "Plan-Risk-Block" CANON.md 2>/dev/null || rc=1
+  grep -qi "plan-risk-block" .clauderules 2>/dev/null || rc=1
+
   return $rc
 }
 

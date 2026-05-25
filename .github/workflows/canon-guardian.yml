@@ -146,3 +146,37 @@ jobs:
             grep -qi "$mod" docs/canon/MODULES.md \
               || (echo "::error file=docs/canon/MODULES.md::Forbidden module '$mod' from CANON.md §11 not mirrored in MODULES.md"; exit 1)
           done
+
+      # ── v1.4 enforcement: canon extension rules present in source + mirror (A1,A5,A6,A7) ──
+
+      - name: "Check 16: Pre-output lock (A1) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Pre-output lock" CANON.md \
+            || (echo "::error file=CANON.md::Pre-output lock section missing (v1.2 §1)"; exit 1)
+          grep -qi "pre-output lock" .clauderules \
+            || (echo "::error file=.clauderules::Pre-output lock not mirrored from CANON.md (A1)"; exit 1)
+
+      - name: "Check 17: Self-Critique (A5) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Self-Critique" CANON.md \
+            || (echo "::error file=CANON.md::Self-Critique section missing (v1.2 §12)"; exit 1)
+          grep -qi "self-critique" .clauderules \
+            || (echo "::error file=.clauderules::Self-Critique not mirrored from CANON.md (A5)"; exit 1)
+
+      - name: "Check 18: Decision-Brief (A6) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Decision-Brief" CANON.md \
+            || (echo "::error file=CANON.md::Decision-Brief section missing (v1.2 §4)"; exit 1)
+          grep -qi "decision-brief" .clauderules \
+            || (echo "::error file=.clauderules::Decision-Brief not mirrored from CANON.md (A6)"; exit 1)
+
+      - name: "Check 19: Plan-Risk-Block (A7) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Plan-Risk-Block" CANON.md \
+            || (echo "::error file=CANON.md::Plan-Risk-Block section missing (v1.2 §8)"; exit 1)
+          grep -qi "plan-risk-block" .clauderules \
+            || (echo "::error file=.clauderules::Plan-Risk-Block not mirrored from CANON.md (A7)"; exit 1)

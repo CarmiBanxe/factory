@@ -12,3 +12,7 @@ Date: 2026-05-23
 ## Non-legal scope
 
 Forbidden modifiers: !eucourt, !echrsearch, !cjeusearch, !ultralegal, !legalqa.
+### 1. Pre-output lock (CANON-PREFLIGHT)
+### 12. Self-Critique by default
+### 4. Decision-Brief (internal)
+### 8. Plan-Risk-Block
