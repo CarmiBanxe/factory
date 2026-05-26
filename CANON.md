@@ -82,7 +82,8 @@ Forbidden modifiers: any legal-domain or court-search override (!eucourt, !echrs
 ### 11. Module loader (optional, non-legal)
 
 Optional capability modules. Canonical operational definitions live in `docs/canon/MODULES.md` (6 modules: technical, financial, scientific, creative, educational, business; each with scope, allowed-tools, prohibitions, enforcement level).
-Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal.
+Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal, medical.
+Excluded (non-legal, out-of-scope): medical (medical_module) — medical-domain требует licensed practitioners для clinical guidance; конфликт с harm-content-safety (medical methods near-fatal). Исключение зафиксировано в Sprint 2 (B3) на основании Universalnyi v4.15.1 line 658.
 Any module load/unload/update must be reported.
 Names without operational definitions are not part of the canon (v1.3 §6).
 

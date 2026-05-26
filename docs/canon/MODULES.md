@@ -11,7 +11,7 @@ Without these definitions, module names are not part of the canon (CANON.md v1.3
 - A module is an optional capability profile, not a permanent extension to the axiom.
 - A module may only strengthen the Decision-Making Axiom, never weaken it.
 - Loading, unloading, and updating a module must be reported explicitly.
-- Forbidden modules (legal, legalfr, legaleu, legalqa, ultralegal, academic-legal) must be refused.
+- Forbidden modules (legal, legalfr, legaleu, legalqa, ultralegal, academic-legal, medical) must be refused.
 - Each module declares: scope, allowed-tools, prohibitions, enforcement level.
 
 ## Format for each module
@@ -107,6 +107,7 @@ The following modules are forbidden and must be refused on load:
 - legalqa
 - ultralegal
 - academic-legal
+- medical — excluded (non-legal, out-of-scope per CANON.md §11): medical-domain требует licensed practitioners для clinical guidance; конфликт с harm-content-safety. Sprint 2 (B3), Universalnyi v4.15.1 line 658.
 
 Any other legal-domain or court-research module falls under the same prohibition.
 
