@@ -32,6 +32,18 @@ For each command:
 - Prohibitions: do not delete any committed canon artifact, do not touch git history.
 - Enforcement level: L0.
 
+## !safe
+- Synopsis: META-REASONING SAFE — self-verification mode.
+- Operational definition: Active internal-control markers:
+  [ПРОВЕРКА] — re-verification of fact, reasoning step, or conclusion.
+  [ПРОПУСК] — identified missing element of reasoning or data.
+  [КОНТРПРИМЕР] — boundary or counter-case probe.
+  [ПОПРАВКА: было → стало | причина] — explicit correction of detected error.
+- Constraints: forbids anthropomorphic/conversational phrases (no "wait", "let me check", "I missed").
+- Output marker: [ПРОВЕРКА] / [ПРОПУСК] / [КОНТРПРИМЕР] / [ПОПРАВКА] inline.
+- Anchored to: CORE v4.11.1 §11 (line 132), CANON.md §Epistemic Accuracy Guard.
+- Enforcement level: L0.
+
 ## !savestate
 - Purpose: persist current agent reasoning state into a snapshot.
 - Effect: writes a structured snapshot (todo list, hypotheses, open RED items) to working memory or a file under docs/snapshots/ if allowed.
@@ -81,11 +93,27 @@ For each command:
 - Prohibitions: must not invent missing premises silently.
 - Enforcement level: L0.
 
+## !checkcompat
+- Synopsis: Verify compatibility of loaded modules.
+- Operational definition: List active modules, check pairwise conflicts (e.g., medical+legal not co-activatable), report incompatibilities, propose resolutions (deactivate / sequence / split context).
+- Constraints: read-only check, never auto-deactivates modules.
+- Output marker: [MODULE-COMPAT] table.
+- Anchored to: Universalnyi v4.15.1 (line 331, /check_compatibility).
+- Enforcement level: L0.
+
 ## !consistency
 - Purpose: check internal consistency of the agent's claims with earlier turns or canon files.
 - Effect: cross-references current output against canon and conversation history.
 - Required output: consistency table (claim vs anchor).
 - Prohibitions: must not silently retract earlier statements.
+- Enforcement level: L0.
+
+## !feedbackloop
+- Synopsis: Establish explicit feedback-loop for iterative refinement.
+- Operational definition: After output, document: (a) what worked, (b) what failed, (c) what to change in the next iteration. Loop until user-defined convergence criterion is met.
+- Constraints: requires user-defined convergence criterion, otherwise refuses to loop.
+- Output marker: [FEEDBACK-LOOP iter N] block at end of each iteration.
+- Anchored to: Universalnyi v4.15.1 (line 319, /feedback_loop).
 - Enforcement level: L0.
 
 ## !gapsanalysis
@@ -109,11 +137,34 @@ For each command:
 - Prohibitions: must not understate negative implications.
 - Enforcement level: L0.
 
+## !3views
+- Synopsis: Multi-perspective quality review.
+- Operational definition: Sequentially apply three perspectives:
+  [A] СКЕПТИК — weak spots, undocumented assumptions, risks, logical gaps.
+  [B] ДИЗАЙНЕР — alternative structures, simplifications, presentation improvements without loss of meaning.
+  [C] АНАЛИТИК — completeness, logical coherence, source/data correspondence.
+  Conclude with [СИНТЕЗ] — synthesized final version after A/B/C reconciliation.
+- Constraints: off by default, explicit activation only, no auto-trigger.
+- Output marker: [A] / [B] / [C] / [СИНТЕЗ] blocks.
+- Anchored to: CORE v4.11.1 §11 (line 146), CANON.md §QC cascade.
+- Enforcement level: L0.
+
 ## !alternatives
 - Purpose: internal exploration of alternative paths.
 - Effect: agent considers other admissible solutions and explains why the chosen one is optimal.
 - Required output: ABC trade-off table internal to the output; final output remains one next step (CANON.md v1.2 §4 Decision-Brief).
 - Prohibitions: must not present alternatives as a user-facing choice.
+- Enforcement level: L0.
+
+## !dual_mode
+- Synopsis: Professor + Inventor dual-track reasoning.
+- Operational definition: Two parallel tracks:
+  [ПРОФЕССОР] — fact verification, terminology, norms, source rigor, logical correctness.
+  [ИЗОБРЕТАТЕЛЬ] — alternative strategies, non-standard moves, optimization.
+  Conclude with [ОБЪЕДИНЕНИЕ] — solution passing Professor filter AND yielding Inventor advantage.
+- Constraints: off by default, explicit activation only.
+- Output marker: [ПРОФЕССОР] / [ИЗОБРЕТАТЕЛЬ] / [ОБЪЕДИНЕНИЕ] blocks.
+- Anchored to: CORE v4.11.1 §11 (line 175).
 - Enforcement level: L0.
 
 ## !edgecases
@@ -128,6 +179,17 @@ For each command:
 - Effect: agent describes the failure mode and impact.
 - Required output: worst-case description + reversibility assessment.
 - Prohibitions: must not minimise worst-case severity.
+- Enforcement level: L0.
+
+## !autoverify
+- Synopsis: Set auto-verification mode (strict / guided / smart).
+- Operational definition: Three modes:
+  strict — every factual claim must have [ФАКТ] tag + source.
+  guided — only non-obvious claims tagged.
+  smart — model-decided, defaults to guided for routine, strict for high-stakes.
+- Constraints: parameter required (one of strict/guided/smart); rejects without parameter.
+- Output marker: [AUTOVERIFY=mode] at response start.
+- Anchored to: Universalnyi v4.15.1 (line 330, /auto_verify [mode]).
 - Enforcement level: L0.
 
 ## !bestcase

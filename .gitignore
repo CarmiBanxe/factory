@@ -6,3 +6,4 @@ set-guardian-secrets.sh
 
 # Nested repo (own commit boundary)
 banxe-repo-template/
+.canon-sources/
