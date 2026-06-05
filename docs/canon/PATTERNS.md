@@ -1,4 +1,4 @@
-Canon version: 1.3
+Canon version: 1.6.1
 Date: 2026-05-23
 
 # Factory Patterns (extracted from p1-summary, factory-level only)
@@ -106,7 +106,7 @@ are kept as historical reference in docs/history/p1-summary-bank.md and are out 
 
 ## 7. Mapping to canon
 
-Every pattern depends on one or more sections of factory/CANON.md v1.3:
+Every pattern depends on one or more sections of factory/CANON.md v1.6.1:
 - §1 Decision-Making Axiom: hard-fail gates, single-next-step subagents.
 - v1.2 §1 Pre-output lock: pre-edit guards, sensitive-path checks.
 - v1.2 §2 Epistemic Accuracy Guard: AI-content reviewer.
