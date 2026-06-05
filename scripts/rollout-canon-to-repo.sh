@@ -1,21 +1,17 @@
 #!/usr/bin/env bash
-# rollout-canon-to-repo.sh — Factory Canon rollout (C4, template)
+# rollout-canon-to-repo.sh — Factory Canon rollout (C4 v2, downstream-mirror)
 #
-# Pins the Factory canon (controlled copies) into a downstream bank repository
-# at a specific Factory version. Creates a branch + PR; never force-pushes.
+# Pins the Factory canon REFERENCE copies into a downstream bank repository at a
+# specific Factory version, plus a LIGHTWEIGHT mirror-check workflow.
+# Does NOT distribute factory-level canon-guardian (which needs fixtures/run.sh).
 #
 # Usage:
 #   ./rollout-canon-to-repo.sh <target-repo-slug> [--version vX.Y.Z] [--dry-run]
 #
-# Example:
-#   ./rollout-canon-to-repo.sh CarmiBanxe/banxe-payment-core --version v1.5.1 --dry-run
-#
-# Requirements: gh (authenticated), git, rsync. Target repo must exist and the
-# caller must have push access (Sprint 6 prerequisite — RED-OPEN #1).
+# Requirements: gh (authenticated, push access to target), git.
 
 set -euo pipefail
 
-# ---- args -------------------------------------------------------------------
 TARGET="${1:-}"
 VERSION=""
 DRY_RUN=0
@@ -33,49 +29,42 @@ if [ -z "$TARGET" ]; then
   exit 2
 fi
 
-# ---- resolve factory version ------------------------------------------------
 FACTORY_ROOT="$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)"
 cd "$FACTORY_ROOT"
 if [ -z "$VERSION" ]; then
   VERSION="$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")"
 fi
-echo "== Factory rollout =="
+echo "== Factory rollout (downstream-mirror C4 v2) =="
 echo "Factory root : $FACTORY_ROOT"
 echo "Factory ver  : $VERSION"
 echo "Target repo  : $TARGET"
 echo "Dry run      : $DRY_RUN"
 
-# ---- controlled copies to distribute ----------------------------------------
+# Reference controlled copies ONLY (no factory-level guardian / fixtures).
 CONTROLLED_FILES=(
   "CANON.md"
   ".clauderules"
-  ".github/workflows/canon-guardian.yml"
-  ".github/workflows/canon-guardian-regression.yml"
-  ".claude/agents/canon-guardian.md"
   "docs/canon/CANON-TOPOLOGY.md"
   "docs/canon/OVERRIDES.md"
   "docs/canon/MODULES.md"
 )
 
-# ---- verify all controlled files exist locally ------------------------------
 for f in "${CONTROLLED_FILES[@]}"; do
   [ -f "$f" ] || { echo "ERROR: controlled file missing in factory: $f" >&2; exit 1; }
 done
 
-# ---- prepare workspace ------------------------------------------------------
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 BRANCH="canon-pin/$VERSION"
 
 echo "== Cloning target =="
 if [ "$DRY_RUN" -eq 1 ]; then
-  echo "[dry-run] gh repo clone $TARGET $WORK/repo"
+  echo "[dry-run] gh repo clone $TARGET"
 else
   gh repo clone "$TARGET" "$WORK/repo" -- --depth 1
 fi
 
-# ---- copy controlled files --------------------------------------------------
-echo "== Copying controlled copies =="
+echo "== Copying reference controlled copies =="
 for f in "${CONTROLLED_FILES[@]}"; do
   if [ "$DRY_RUN" -eq 1 ]; then
     echo "[dry-run] copy $f -> $TARGET/$f"
@@ -85,37 +74,66 @@ for f in "${CONTROLLED_FILES[@]}"; do
   fi
 done
 
-# ---- write version pin ------------------------------------------------------
 PIN_FILE=".factory-canon-version"
+MIRROR_WF=".github/workflows/canon-mirror-check.yml"
+
 if [ "$DRY_RUN" -eq 1 ]; then
   echo "[dry-run] write $PIN_FILE = $VERSION"
-else
-  echo "$VERSION" > "$WORK/repo/$PIN_FILE"
-fi
-
-# ---- commit + PR ------------------------------------------------------------
-if [ "$DRY_RUN" -eq 1 ]; then
-  echo "[dry-run] git checkout -b $BRANCH"
-  echo "[dry-run] git add + commit 'chore(canon): pin Factory $VERSION'"
-  echo "[dry-run] git push origin $BRANCH"
-  echo "[dry-run] gh pr create --base main --title 'Pin Factory canon $VERSION'"
+  echo "[dry-run] generate lightweight $MIRROR_WF"
+  echo "[dry-run] branch $BRANCH, commit, push, PR"
   echo "== Dry run complete. No changes made to $TARGET. =="
   exit 0
 fi
 
+echo "$VERSION" > "$WORK/repo/$PIN_FILE"
+
+# Lightweight downstream mirror-check: verifies presence + version pin only.
+mkdir -p "$WORK/repo/.github/workflows"
+cat > "$WORK/repo/$MIRROR_WF" <<'WF_EOF'
+name: Canon Mirror Check
+on:
+  pull_request:
+    paths:
+      - 'CANON.md'
+      - '.clauderules'
+      - '.factory-canon-version'
+      - 'docs/canon/**'
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  mirror-check:
+    name: Canon mirror presence + version pin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify canon mirror integrity
+        run: |
+          set -euo pipefail
+          test -s .factory-canon-version || { echo "::error::.factory-canon-version missing or empty"; exit 1; }
+          test -s CANON.md || { echo "::error::CANON.md missing or empty"; exit 1; }
+          test -s .clauderules || { echo "::error::.clauderules missing or empty"; exit 1; }
+          ver="$(cat .factory-canon-version)"
+          echo "Pinned Factory canon version: $ver"
+          grep -q "Decision-Making Axiom" CANON.md || { echo "::error::CANON.md missing Decision-Making Axiom"; exit 1; }
+          echo "Canon mirror OK."
+WF_EOF
+
 cd "$WORK/repo"
 git checkout -b "$BRANCH"
-git add "${CONTROLLED_FILES[@]}" "$PIN_FILE"
-git commit -m "chore(canon): pin Factory canon $VERSION
+git add "${CONTROLLED_FILES[@]}" "$PIN_FILE" "$MIRROR_WF"
+git commit -m "chore(canon): pin Factory canon $VERSION (downstream mirror)
 
-Distributes Factory controlled copies (CANON.md, .clauderules,
-canon-guardian workflows, agents, canon docs) pinned at Factory $VERSION.
+Distributes Factory reference controlled copies + lightweight
+canon-mirror-check workflow, pinned at Factory $VERSION.
+Does not include factory-level guardian (fixtures live in factory only).
 Generated by factory/scripts/rollout-canon-to-repo.sh."
 git push -u origin "$BRANCH"
 gh pr create \
   --base main \
   --head "$BRANCH" \
-  --title "chore(canon): pin Factory canon $VERSION" \
-  --body "Automated canon rollout from factory $VERSION. Review controlled-copy diffs before merge. Branch protection + canon-guardian must pass."
+  --title "chore(canon): pin Factory canon $VERSION (downstream mirror)" \
+  --body "Automated canon mirror rollout from factory $VERSION. Distributes reference controlled copies + lightweight mirror-check workflow."
 
 echo "== Rollout PR created for $TARGET at $VERSION =="
