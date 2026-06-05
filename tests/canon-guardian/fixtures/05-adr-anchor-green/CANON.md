@@ -18,3 +18,9 @@ Forbidden modules: legal, legalfr, legaleu, legalqa, ultralegal, academic-legal.
 ### 12. Self-Critique by default
 ### 4. Decision-Brief (internal)
 ### 8. Plan-Risk-Block
+### Epistemic Accuracy Guard
+### Output Style Canon
+### Question-Audit
+### Honest Reporting
+- Structural completion is not substantive completion.
+- Explicit insertion target required.

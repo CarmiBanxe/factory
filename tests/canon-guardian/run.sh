@@ -150,6 +150,30 @@ run_guardian_checks() {
   grep -q "Plan-Risk-Block" CANON.md 2>/dev/null || rc=1
   grep -qi "plan-risk-block" .clauderules 2>/dev/null || rc=1
 
+
+  # 20. Epistemic Accuracy Guard (A2) present in CANON.md and .clauderules
+  grep -q "Epistemic Accuracy Guard" CANON.md 2>/dev/null || rc=1
+  grep -qi "epistemic accuracy guard" .clauderules 2>/dev/null || rc=1
+
+  # 21. Output Style Canon (A3) present in CANON.md and .clauderules
+  grep -q "Output Style Canon" CANON.md 2>/dev/null || rc=1
+  grep -qi "output style canon" .clauderules 2>/dev/null || rc=1
+
+  # 22. Question-Audit (A4) present in CANON.md and .clauderules
+  grep -q "Question-Audit" CANON.md 2>/dev/null || rc=1
+  grep -qi "question-audit" .clauderules 2>/dev/null || rc=1
+
+  # 23. Honest Reporting (F1) present in CANON.md and .clauderules
+  grep -q "Honest Reporting" CANON.md 2>/dev/null || rc=1
+  grep -qi "honest reporting" .clauderules 2>/dev/null || rc=1
+
+  # 24. No-fake-completion rule (F2) present in CANON.md and .clauderules
+  grep -qi "not constitute completion\|substantive completion" CANON.md 2>/dev/null || rc=1
+  grep -qi "substantive completion" .clauderules 2>/dev/null || rc=1
+
+  # 25. Insertion target (F3) present in CANON.md and .clauderules
+  grep -qi "insertion target" CANON.md 2>/dev/null || rc=1
+  grep -qi "insertion target" .clauderules 2>/dev/null || rc=1
   return $rc
 }
 
