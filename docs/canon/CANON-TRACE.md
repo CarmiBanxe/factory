@@ -1,6 +1,6 @@
 # CANON-TRACE — Source-to-Canon Integration Trace v2
 
-Canon version: 1.4.1
+Canon version: 1.6.1
 Date: 2026-05-25
 Method: line-by-line verification (Sprint 2, B1)
 
