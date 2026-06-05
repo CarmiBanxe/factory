@@ -157,7 +157,7 @@ Scheduled (weekly via guardian.yml) or manual invocation.
 | 5 | Coverage threshold | repo `COVERAGE_MIN` >= factory minimum (80%) | threshold not lowered without override |
 | 6 | Proto-sync version | if repo has `scripts/proto-sync.py` → SHA256 vs `factory/ui-sync-core/proto-sync.py` | hash match |
 | 7 | Design token source | if repo has `config/design-tokens/banxe-tokens.json` → SHA256 vs `factory/ui-sync-core/tokens/banxe-tokens.json` | hash match |
-| 8 | Style-dictionary config | if repo has style-dictionary → config hash vs factory | hash match |
+| 8 | Style-dictionary JS-config | if repo has style-dictionary → SHA256 of `style-dictionary.config.js` (or `.mjs`) vs factory canonical, AND output `tokens.json` hash vs last build; both must match (JS-config drift = HIGH even if output coincidentally matches) | both hashes match |
 | 9 | Override legitimacy | every entry in `repo-overrides.yaml` has Gap/ADR reference | all justified |
 | 10 | Adapter completeness | repo has factory workflows if it's a factory-managed repo | all 3 workflows present |
 
