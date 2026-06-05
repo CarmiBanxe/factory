@@ -180,3 +180,51 @@ jobs:
             || (echo "::error file=CANON.md::Plan-Risk-Block section missing (v1.2 §8)"; exit 1)
           grep -qi "plan-risk-block" .clauderules \
             || (echo "::error file=.clauderules::Plan-Risk-Block not mirrored from CANON.md (A7)"; exit 1)
+
+      - name: "Check 20: Epistemic Accuracy Guard (A2) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Epistemic Accuracy Guard" CANON.md \
+            || (echo "::error file=CANON.md::Epistemic Accuracy Guard section missing (v1.2 §2)"; exit 1)
+          grep -qi "epistemic accuracy guard" .clauderules \
+            || (echo "::error file=.clauderules::Epistemic Accuracy Guard not mirrored from CANON.md (A2)"; exit 1)
+
+      - name: "Check 21: Output Style Canon (A3) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Output Style Canon" CANON.md \
+            || (echo "::error file=CANON.md::Output Style Canon section missing (v1.2 §7)"; exit 1)
+          grep -qi "output style canon" .clauderules \
+            || (echo "::error file=.clauderules::Output Style Canon not mirrored from CANON.md (A3)"; exit 1)
+
+      - name: "Check 22: Question-Audit (A4) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Question-Audit" CANON.md \
+            || (echo "::error file=CANON.md::Question-Audit section missing (v1.2 §6)"; exit 1)
+          grep -qi "question-audit" .clauderules \
+            || (echo "::error file=.clauderules::Question-Audit not mirrored from CANON.md (A4)"; exit 1)
+
+      - name: "Check 23: Honest Reporting (F1) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -q "Honest Reporting" CANON.md \
+            || (echo "::error file=CANON.md::Honest Reporting section missing (v1.3)"; exit 1)
+          grep -qi "honest reporting" .clauderules \
+            || (echo "::error file=.clauderules::Honest Reporting not mirrored from CANON.md (F1)"; exit 1)
+
+      - name: "Check 24: No-fake-completion rule (F2) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -qi "not constitute completion\|substantive completion" CANON.md \
+            || (echo "::error file=CANON.md::Structural-vs-substantive completion rule missing (v1.3)"; exit 1)
+          grep -qi "substantive completion" .clauderules \
+            || (echo "::error file=.clauderules::Completion rule not mirrored from CANON.md (F2)"; exit 1)
+
+      - name: "Check 25: Insertion target (F3) present in CANON.md and .clauderules"
+        run: |
+          set -euo pipefail
+          grep -qi "insertion target" CANON.md \
+            || (echo "::error file=CANON.md::Insertion target rule missing (F3)"; exit 1)
+          grep -qi "insertion target" .clauderules \
+            || (echo "::error file=.clauderules::Insertion target not mirrored from CANON.md (F3)"; exit 1)
