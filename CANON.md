@@ -1,4 +1,4 @@
-Canon version: 1.3
+Canon version: 1.6.1
 Date: 2026-05-23
 
 ## Decision-Making Axiom (Canon)
@@ -74,7 +74,7 @@ Before every reply, the agent must verify in order:
 ### 10. Override commands (non-legal)
 
 Override commands (режимные тумблеры) may strengthen the axiom, never weaken it.
-Canonical operational definitions live in `docs/canon/OVERRIDES.md` (31 commands, anchored to this canon v1.3).
+Canonical operational definitions live in `docs/canon/OVERRIDES.md` (37 commands, anchored to this canon v1.6.1).
 Names without operational definitions are not part of the canon (v1.3 §6).
 
 Forbidden modifiers: any legal-domain or court-search override (!eucourt, !echrsearch, !cjeusearch, !academic-legal, !ultralegal, !legalqa, !ultralegalstrategy).
@@ -151,7 +151,7 @@ factory/CANON.md must carry a version header:
 - Major (X): axiom added or removed.
 - Minor (Y): wording clarification, extension addition, copy propagation, or topology change.
 
-Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
+Current version: 1.6.1 (2026-06-06, Sprints 1-5: 25 L2 checks, 37 overrides, 31 regression fixtures, rollout script).
 
 ## Honest Reporting and Enforcement Levels (Canon v1.3)
 
@@ -190,6 +190,6 @@ Current version: 1.3 (2026-05-23, honest reporting + enforcement levels).
    - Every module (technical, financial, scientific, creative, educational, business) must have a written scope, allowed-tools list, and prohibitions.
    - Names without definitions are not part of the canon.
 
-7. RED-OPEN at time of v1.3
-   - Downstream bank repositories not pinned to Factory v1.2.
+7. RED-OPEN (updated v1.6.1)
+   - Downstream bank repositories: canon pin v1.6.1 rollout in progress (one repo pinned; remaining repos have open PRs awaiting merge-доводка).
    - Perplexity transition packet anchoring not technically verified.

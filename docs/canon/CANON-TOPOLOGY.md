@@ -1,10 +1,10 @@
-Canon version: 1.3
+Canon version: 1.6.1
 Date: 2026-05-23
 
 # Canon Topology — Factory Governance Structure
 
 **Date:** 2026-05-23
-**Authority:** `factory/CANON.md` v1.3 (Decision-Making Axiom + Extensions v1.2 + Honest Reporting v1.3)
+**Authority:** `factory/CANON.md` v1.6.1 (Decision-Making Axiom + Extensions + Honest Reporting + enforcement Sprints 1-5)
 
 ---
 
@@ -111,4 +111,4 @@ Date: YYYY-MM-DD
 - Major (X): axiom added or removed.
 - Minor (Y): wording clarification, copy propagation, or topology change.
 
-Current version: **1.3** (2026-05-23, honest reporting + enforcement levels).
+Current version: **1.6.1** (2026-06-06, enforcement Sprints 1-5).

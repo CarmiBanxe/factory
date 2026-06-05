@@ -1,4 +1,4 @@
-Canon version: 1.3
+Canon version: 1.6.1
 Date: 2026-05-23
 
 # Factory Modules — Operational Definitions
