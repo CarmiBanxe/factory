@@ -1,6 +1,6 @@
 # Canon Audit Report — Factory Governance
 
-**Date:** 2026-05-23
+**Date:** 2026-06-06 (version-sync to v1.6.1; Sprints 1-5 enforcement)
 **Scope:** `/home/mmber/factory/` (factory-level only, no bank repos)
 **Method:** Full read of all 17 canon-bearing files (~95 KB)
 
