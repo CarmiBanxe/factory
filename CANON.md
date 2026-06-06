@@ -193,3 +193,9 @@ Current version: 1.6.1 (2026-06-06, Sprints 1-5: 25 L2 checks, 37 overrides, 31 
 7. RED-OPEN (updated v1.6.1)
    - RESOLVED v1.6.1: all three downstream bank repositories pinned to Factory canon v1.6.1 (verified .factory-canon-version on default branches).
    - Perplexity transition packet anchoring not technically verified (out-of-scope for factory automation; requires external infrastructure).
+
+## TERMINAL ROLES (three-terminal canon)
+- Terminal A = FACTORY only (improve/upgrade the factory; no BANXE code).
+- Terminal Central = produces BANXE code USING the factory.
+- Terminal B = smart refactor + new code, no conflict with Central.
+- MANDATORY: every terminal confirms its role before any work. "Who rules" is never asked.
