@@ -1,6 +1,28 @@
 Canon version: 1.6.1
 Date: 2026-05-23
 
+## IDEOLOGY (immutable core)
+
+1. Two levels of being: a universal factory vs a domain project. The factory is
+   configured by the project but never hard-codes the domain into itself.
+2. Fork Policy: forking functions/blocks/AI-agents between factory and project is
+   ALLOWED and encouraged. The criterion is "the best solution" and expediency.
+   A duplicate is not an error.
+3. Dual-based AI-agents: a base agent lives in the factory, its domain fork lives
+   in the project.
+4. Three terminals: A = factory, Central = domain project, B = refactor
+   (B never touches the factory).
+5. Gates: Gate A = dry-run, Gate B = actual + validate + green. Blocked gates are
+   not auto-repaired without an explicit request.
+6. Isolation by worktree-path + role-anchors in every worktree.
+
+### Allowed Forks
+
+- Orchestration (engine ↔ config).
+- factory-watchdog (universal ↔ project-specific).
+- Observability.
+- AI-agents (base in factory ↔ domain fork in project).
+
 ## Decision-Making Axiom (Canon)
 
 1. Always select the globally optimal solution among all admissible options.
