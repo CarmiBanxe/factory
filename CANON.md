@@ -191,5 +191,5 @@ Current version: 1.6.1 (2026-06-06, Sprints 1-5: 25 L2 checks, 37 overrides, 31 
    - Names without definitions are not part of the canon.
 
 7. RED-OPEN (updated v1.6.1)
-   - Downstream bank repositories: canon pin v1.6.1 rollout in progress (one repo pinned; remaining repos have open PRs awaiting merge-доводка).
+   - RESOLVED v1.6.1: all three downstream bank repositories pinned to Factory canon v1.6.1 (verified .factory-canon-version on default branches).
    - Perplexity transition packet anchoring not technically verified (out-of-scope for factory automation; requires external infrastructure).
