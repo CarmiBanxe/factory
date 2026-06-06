@@ -6,7 +6,7 @@ TMP_DIR="${TMPDIR:-/tmp}/spec-build.$$"
 DRY_RUN=0; SPEC_REF=""; SPEC_PATH=""; SPEC_FAMILY=""
 TARGET_REPO_SLUG=""; OUTPUT_TYPE=""; ALLOWED_SCOPE=""; NOTES=""
 TARGET_REPO_NAME=""; TARGET_REPO_DIR=""; RIGHT_REPO_DIR="${HOME}/banxe-architecture"; BRANCH=""
-cleanup() { rm -rf "$TMP_DIR"; }; trap cleanup EXIT
+cleanup() { log "TMP_DIR preserved for diagnostics: $TMP_DIR"; }; trap cleanup EXIT
 log()  { printf '[spec-build] %s\n' "$*"; }
 fail() { printf '[spec-build][FAIL] %s\n' "$*" >&2; exit 1; }
 require_cmd() { command -v "$1" >/dev/null 2>&1 || fail "Missing command: $1"; }
@@ -25,6 +25,7 @@ infer_spec_family() {
     *kyc*provider*port*spec*.md) SPEC_FAMILY="kyc-provider-port";;
     *partnerport*contract*spec*.md) SPEC_FAMILY="emi-banking-partnerport-CONTRACT";;
     *crypto*ops*subgroup*spec*.md) SPEC_FAMILY="crypto-ops-subgroup";;
+    *exchangeport*contract*spec*.md) SPEC_FAMILY="exchangeport-contract";;
     *) fail "Cannot infer spec_family from: $b";; esac
 }
 load_mapping() {
@@ -84,6 +85,74 @@ run_agent() {
   ( cd "$cwd" && claude --agent "$name" -p "$(cat "$pf")" ) > "$of" || fail "Agent failed: $name"
 }
 mk_arch() { { echo "Run architect. family=$SPEC_FAMILY target=$TARGET_REPO_SLUG output=$OUTPUT_TYPE scope=$ALLOWED_SCOPE"; echo "Return only READY or NOT READY per your contract."; echo "SPEC:"; cat "$TMP_DIR/spec.md"; } > "$TMP_DIR/a.prompt"; }
-mk_dev()  { { echo "Run developer. target_dir=$TARGET_REPO_DIR output=$OUTPUT_TYPE"; echo "HARD: write ONLY within scope: $ALLOWED_SCOPE. No git ops."; echo "SPEC:"; cat "$TMP_DIR/spec.md"; echo "ARCHITECT:"; cat "$TMP_DIR/a.out"; } > "$TMP_DIR/d.prompt"; }
+mk_dev()  {
+  { echo "Run developer. target_dir=$TARGET_REPO_DIR output=$OUTPUT_TYPE"
+    echo "HARD: write ONLY within scope: $ALLOWED_SCOPE. No git ops."
+    echo "DO NOT TOUCH any file outside: $ALLOWED_SCOPE."
+    echo "ABSOLUTE BAN: no edits of any kind outside allowed scope (imports, __all__, formatting, whitespace, incidental refactors)."
+    echo "If you believe an out-of-scope file should change, do NOT edit it; instead, keep all code edits strictly inside the allowed scope only."
+    echo "SPEC:"
+    cat "$TMP_DIR/spec.md"
+    echo "ARCHITECT:"
+    cat "$TMP_DIR/a.out"
+  } > "$TMP_DIR/d.prompt"
+}
 mk_rev()  { { echo "Run reviewer. scope=$ALLOWED_SCOPE"; echo "Return only APPROVED FOR CANON-GUARDIAN or REJECTED per your contract."; echo "SPEC:"; cat "$TMP_DIR/spec.md"; echo "DEVELOPER:"; cat "$TMP_DIR/d.out"; } > "$TMP_DIR/r.prompt"; }
 mk_guard(){ { echo "Run canon-guardian. scope=$ALLOWED_SCOPE"; echo "Return only PASS or FAIL with reason."; echo "ARCHITECT:"; cat "$TMP_DIR/a.out"; echo "REVIEWER:"; cat "$TMP_DIR/r.out"; } > "$TMP_DIR/g.prompt"; }
+enforce_scope() {
+  log "Scope hard-check (Gate B): $ALLOWED_SCOPE"
+  [[ $DRY_RUN -eq 1 ]] && { log "DRY-RUN: scope check skipped"; return 0; }
+  local current; current="$(git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}' | sort)"
+  local changed
+  if [[ -f "$TMP_DIR/baseline.files" ]]; then
+    changed="$(comm -13 "$TMP_DIR/baseline.files" <(printf '%s\n' "$current"))"
+  else
+    changed="$current"
+  fi
+  [[ -n "$changed" ]] || fail "No changes produced by developer"
+  local IFS=','; read -ra patterns <<< "$ALLOWED_SCOPE"; unset IFS
+  local f ok p prefix
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    ok=0
+    for p in "${patterns[@]}"; do
+      prefix="${p%%\**}"; prefix="${prefix%/}"
+      if [[ "$p" == *'**' ]]; then
+        [[ "$f" == "$prefix"/* ]] && { ok=1; break; }
+      elif [[ "$p" == *'*' ]]; then
+        [[ "$f" == "$prefix"/* && "${f#"$prefix"/}" != */* ]] && { ok=1; break; }
+      else
+        [[ "$f" == "$p" ]] && { ok=1; break; }
+      fi
+    done
+    [[ $ok -eq 1 ]] || fail "Gate B: out-of-scope file: $f (allowed: $ALLOWED_SCOPE)"
+  done <<< "$changed"
+  log "Scope OK"
+}
+stage1_architect() { log "STAGE 1 — architect"; mk_arch; run_agent architect "$TMP_DIR/a.prompt" "$TMP_DIR/a.out" "$ROOT_DIR"; grep -qi "READY" "$TMP_DIR/a.out" && ! grep -qi "NOT READY" "$TMP_DIR/a.out" || fail "Architect not READY"; }
+stage2_developer() {
+  log "STAGE 2 — developer"
+  git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}' | sort > "$TMP_DIR/baseline.files"
+  mk_dev; run_agent developer "$TMP_DIR/d.prompt" "$TMP_DIR/d.out" "$TARGET_REPO_DIR"
+}
+stage3_reviewer() { log "STAGE 3 — reviewer"; mk_rev; run_agent reviewer "$TMP_DIR/r.prompt" "$TMP_DIR/r.out" "$TARGET_REPO_DIR"; grep -qi "APPROVED FOR CANON-GUARDIAN" "$TMP_DIR/r.out" || fail "Reviewer not approved"; }
+stage4_guardian() { log "STAGE 4 — canon-guardian"; mk_guard; run_agent canon-guardian "$TMP_DIR/g.prompt" "$TMP_DIR/g.out" "$ROOT_DIR"; grep -qi "PASS" "$TMP_DIR/g.out" && ! grep -qi "FAIL" "$TMP_DIR/g.out" || fail "Guardian not PASS"; }
+stage5_branch_pr() {
+  log "STAGE 5 — branch + PR"
+  if [[ $DRY_RUN -eq 1 ]]; then log "DRY-RUN complete | would target $TARGET_REPO_SLUG branch $BRANCH"; return 0; fi
+  git -C "$TARGET_REPO_DIR" add -A
+  git -C "$TARGET_REPO_DIR" diff --cached --quiet && fail "No staged changes"
+  git -C "$TARGET_REPO_DIR" -c user.email="factory@banxe.local" -c user.name="BANXE Factory" commit -m "feat(spec-build): ${SPEC_FAMILY} from SPEC" --quiet
+  git -C "$TARGET_REPO_DIR" push -u origin "$BRANCH"
+  local d; d="$(gh -R "$TARGET_REPO_SLUG" repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo main)"
+  gh -R "$TARGET_REPO_SLUG" pr create --base "$d" --head "$BRANCH" --title "feat(spec-build): ${SPEC_FAMILY} from SPEC" --body "Generated by spec-build. SPEC: ${SPEC_PATH}. Scope: ${ALLOWED_SCOPE}. PR-only." || fail "PR create failed"
+  log "REAL PR done | $TARGET_REPO_SLUG | $BRANCH"
+}
+main() {
+  parse_args "$@"; infer_spec_family; load_mapping; preflight_agents
+  stage0_readiness; fetch_spec_to_tmp; prepare_target_branch
+  stage1_architect; stage2_developer; enforce_scope
+  stage3_reviewer; stage4_guardian; stage5_branch_pr
+  log "DONE — $SPEC_FAMILY mode=$([[ $DRY_RUN -eq 1 ]] && echo dry-run || echo real)"
+}
+main "$@"
