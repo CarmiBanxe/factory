@@ -1,5 +1,5 @@
 spec_family	target_repo_slug	output_type	allowed_scope	notes
-walletport-contract	CarmiBanxe/banxe-payment-core	contract-code	src/wallet/**,tests/wallet/**	first pilot
+walletport-contract	CarmiBanxe/banxe-payment-core	contract-code	src/wallet/**	first pilot
 kyc-provider-port	CarmiBanxe/banxe-emi-stack	service-code	services/kyc/**,tests/kyc/**	ADR-034
 emi-banking-partnerport-CONTRACT	CarmiBanxe/banxe-payment-core	contract-code	src/partner/**,contracts/**	contract-only
 crypto-ops-subgroup	CarmiBanxe/banxe-payment-core	service-code	src/crypto-ops/**,tests/crypto-ops/**	ADR-015

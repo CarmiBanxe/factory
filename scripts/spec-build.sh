@@ -71,9 +71,25 @@ prepare_target_branch() {
   log "Prepare branch"
   [[ $DRY_RUN -eq 1 ]] && { log "DRY-RUN: skip branch"; return 0; }
   local d; d="$(gh -R "$TARGET_REPO_SLUG" repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo main)"
-  git -C "$TARGET_REPO_DIR" fetch origin --quiet || true
-  git -C "$TARGET_REPO_DIR" checkout "$d" --quiet; git -C "$TARGET_REPO_DIR" pull --ff-only --quiet || true
-  git -C "$TARGET_REPO_DIR" checkout -B "$BRANCH" --quiet; log "On $BRANCH"
+  git -C "$TARGET_REPO_DIR" fetch origin --quiet || fail "fetch origin failed"
+  git -C "$TARGET_REPO_DIR" rev-parse --verify "origin/$d" >/dev/null 2>&1 || fail "origin/$d not found after fetch"
+  git -C "$TARGET_REPO_DIR" checkout -B "$BRANCH" "origin/$d" --quiet; log "On $BRANCH (base: origin/$d)"
+}
+preflight_target_clean() {
+  log "Pre-flight — target repo cleanliness"
+  local d dirty n local_sha origin_sha
+  dirty="$(git -C "$TARGET_REPO_DIR" status --porcelain)"
+  if [[ -n "$dirty" ]]; then
+    n="$(printf '%s\n' "$dirty" | wc -l | tr -d ' ')"
+    log "WARN: target working tree is DIRTY ($n file(s)) — PR base may be unclean (NOT auto-fixed)"
+  fi
+  d="$(gh -R "$TARGET_REPO_SLUG" repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo main)"
+  local_sha="$(git -C "$TARGET_REPO_DIR" rev-parse --verify "$d" 2>/dev/null || true)"
+  origin_sha="$(git -C "$TARGET_REPO_DIR" rev-parse --verify "origin/$d" 2>/dev/null || true)"
+  if [[ -n "$local_sha" && -n "$origin_sha" && "$local_sha" != "$origin_sha" ]]; then
+    log "WARN: local '$d' diverges from 'origin/$d' (local=${local_sha:0:7} origin=${origin_sha:0:7}) — PR base may be unclean (NOT auto-fixed)"
+  fi
+  log "Pre-flight cleanliness check done"
 }
 run_agent() {
   local name="$1" pf="$2" of="$3" cwd="$4"
@@ -99,6 +115,22 @@ mk_dev()  {
 }
 mk_rev()  { { echo "Run reviewer. scope=$ALLOWED_SCOPE"; echo "Return only APPROVED FOR CANON-GUARDIAN or REJECTED per your contract."; echo "SPEC:"; cat "$TMP_DIR/spec.md"; echo "DEVELOPER:"; cat "$TMP_DIR/d.out"; } > "$TMP_DIR/r.prompt"; }
 mk_guard(){ { echo "Run canon-guardian. scope=$ALLOWED_SCOPE"; echo "Return only PASS or FAIL with reason."; echo "ARCHITECT:"; cat "$TMP_DIR/a.out"; echo "REVIEWER:"; cat "$TMP_DIR/r.out"; } > "$TMP_DIR/g.prompt"; }
+scope_match_file() {
+  # Returns 0 if $1 matches any ALLOWED_SCOPE pattern (same semantics as enforce_scope/Gate B).
+  local f="$1" p prefix; local IFS=','
+  read -ra _patterns <<< "$ALLOWED_SCOPE"; unset IFS
+  for p in "${_patterns[@]}"; do
+    prefix="${p%%\**}"; prefix="${prefix%/}"
+    if [[ "$p" == *'**' ]]; then
+      [[ "$f" == "$prefix"/* ]] && return 0
+    elif [[ "$p" == *'*' ]]; then
+      [[ "$f" == "$prefix"/* && "${f#"$prefix"/}" != */* ]] && return 0
+    else
+      [[ "$f" == "$p" ]] && return 0
+    fi
+  done
+  return 1
+}
 enforce_scope() {
   log "Scope hard-check (Gate B): $ALLOWED_SCOPE"
   [[ $DRY_RUN -eq 1 ]] && { log "DRY-RUN: scope check skipped"; return 0; }
@@ -140,8 +172,17 @@ stage4_guardian() { log "STAGE 4 — canon-guardian"; mk_guard; run_agent canon-
 stage5_branch_pr() {
   log "STAGE 5 — branch + PR"
   if [[ $DRY_RUN -eq 1 ]]; then log "DRY-RUN complete | would target $TARGET_REPO_SLUG branch $BRANCH"; return 0; fi
-  git -C "$TARGET_REPO_DIR" add -A
-  git -C "$TARGET_REPO_DIR" diff --cached --quiet && fail "No staged changes"
+  log "STAGE 5 — staging in-scope files only: $ALLOWED_SCOPE"
+  local f
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    if scope_match_file "$f"; then
+      git -C "$TARGET_REPO_DIR" add -- "$f"
+    else
+      log "STAGE 5 — skip out-of-scope dirty file (untouched): $f"
+    fi
+  done < <(git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}')
+  git -C "$TARGET_REPO_DIR" diff --cached --quiet && fail "No in-scope staged changes"
   git -C "$TARGET_REPO_DIR" -c user.email="factory@banxe.local" -c user.name="BANXE Factory" commit -m "feat(spec-build): ${SPEC_FAMILY} from SPEC" --quiet
   git -C "$TARGET_REPO_DIR" push -u origin "$BRANCH"
   local d; d="$(gh -R "$TARGET_REPO_SLUG" repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo main)"
@@ -151,7 +192,7 @@ stage5_branch_pr() {
 main() {
   parse_args "$@"; infer_spec_family; load_mapping; preflight_agents
   stage0_readiness; fetch_spec_to_tmp; prepare_target_branch
-  stage1_architect; stage2_developer; enforce_scope
+  stage1_architect; preflight_target_clean; stage2_developer; enforce_scope
   stage3_reviewer; stage4_guardian; stage5_branch_pr
   log "DONE — $SPEC_FAMILY mode=$([[ $DRY_RUN -eq 1 ]] && echo dry-run || echo real)"
 }
