@@ -28,7 +28,7 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 │   ├── factory/quality-core/semgrep/fintech-rules.yml
 │   ├── factory/quality-core/workflows/quality-gate.yml
 │   ├── factory/quality-core/workflows/lint-python.yml
-│   ├── factory/ui-sync-core/tokens/banxe-tokens.json
+│   ├── factory/ui-sync-core/tokens/tokens.example.json
 │   ├── factory/ui-sync-core/tokens/style-dictionary.config.js
 │   └── factory/ui-sync-core/proto-sync.py
 │
@@ -68,7 +68,7 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 | `fintech-rules.yml` | `factory/quality-core/semgrep/` | Downloaded at CI runtime (no local copy) |
 | `quality-gate.yml` | `factory/quality-core/workflows/` | Controlled copy in `.github/workflows/` |
 | `lint-python.yml` | `factory/quality-core/workflows/` | Controlled copy in `.github/workflows/` |
-| `banxe-tokens.json` | `factory/ui-sync-core/tokens/` | Controlled copy in `config/design-tokens/` |
+| `tokens.example.json` | `factory/ui-sync-core/tokens/` | Format sample; project defines its own token source via TOKEN_SOURCE (controlled copy in `config/design-tokens/`) |
 | `proto-sync.py` | `factory/ui-sync-core/` | Controlled copy in `scripts/` |
 | `style-dictionary.config.js` | `factory/ui-sync-core/tokens/` | Controlled copy in `config/design-tokens/` |
 

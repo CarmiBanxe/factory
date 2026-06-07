@@ -27,6 +27,7 @@ infer_spec_family() {
     *crypto*ops*subgroup*spec*.md) SPEC_FAMILY="crypto-ops-subgroup";;
     *exchangeport*contract*spec*.md) SPEC_FAMILY="exchangeport-contract";;
     *notification*port*contract*spec*.md) SPEC_FAMILY="notificationport-contract";;
+    *crm*port*contract*spec*.md) SPEC_FAMILY="crmport-contract";;
     *) fail "Cannot infer spec_family from: $b";; esac
 }
 load_mapping() {
@@ -135,7 +136,7 @@ scope_match_file() {
 enforce_scope() {
   log "Scope hard-check (Gate B): $ALLOWED_SCOPE"
   [[ $DRY_RUN -eq 1 ]] && { log "DRY-RUN: scope check skipped"; return 0; }
-  local current; current="$(git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}' | sort)"
+  local current; current="$(git -C "$TARGET_REPO_DIR" status --porcelain --untracked-files=all | awk '{print $2}' | sort)"
   local changed
   if [[ -f "$TMP_DIR/baseline.files" ]]; then
     changed="$(comm -13 "$TMP_DIR/baseline.files" <(printf '%s\n' "$current"))"
@@ -165,7 +166,7 @@ enforce_scope() {
 stage1_architect() { log "STAGE 1 — architect"; mk_arch; run_agent architect "$TMP_DIR/a.prompt" "$TMP_DIR/a.out" "$ROOT_DIR"; grep -qi "READY" "$TMP_DIR/a.out" && ! grep -qi "NOT READY" "$TMP_DIR/a.out" || fail "Architect not READY"; }
 stage2_developer() {
   log "STAGE 2 — developer"
-  git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}' | sort > "$TMP_DIR/baseline.files"
+  git -C "$TARGET_REPO_DIR" status --porcelain --untracked-files=all | awk '{print $2}' | sort > "$TMP_DIR/baseline.files"
   mk_dev; run_agent developer "$TMP_DIR/d.prompt" "$TMP_DIR/d.out" "$TARGET_REPO_DIR"
 }
 stage3_reviewer() { log "STAGE 3 — reviewer"; mk_rev; run_agent reviewer "$TMP_DIR/r.prompt" "$TMP_DIR/r.out" "$TARGET_REPO_DIR"; grep -qi "APPROVED FOR CANON-GUARDIAN" "$TMP_DIR/r.out" || fail "Reviewer not approved"; }
@@ -204,7 +205,7 @@ stage5_branch_pr() {
     else
       log "STAGE 5 — skip out-of-scope dirty file (untouched): $f"
     fi
-  done < <(git -C "$TARGET_REPO_DIR" status --porcelain | awk '{print $2}')
+  done < <(git -C "$TARGET_REPO_DIR" status --porcelain --untracked-files=all | awk '{print $2}')
   git -C "$TARGET_REPO_DIR" diff --cached --quiet && fail "No in-scope staged changes"
   git -C "$TARGET_REPO_DIR" -c user.email="factory@banxe.local" -c user.name="BANXE Factory" commit -m "feat(spec-build): ${SPEC_FAMILY} from SPEC" --quiet
   git -C "$TARGET_REPO_DIR" push -u origin "$BRANCH"

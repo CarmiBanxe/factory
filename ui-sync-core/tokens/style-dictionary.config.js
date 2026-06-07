@@ -8,7 +8,7 @@
  *
  * Environment overrides (defaults keep current behaviour):
  *   TOKEN_OUTPUT_DIR  output dir            (default "tokens/output/")
- *   TOKEN_SOURCE      source token file     (default "banxe-tokens.json")
+ *   TOKEN_SOURCE      source token file     (default "tokens.example.json")
  *   TOKEN_PREFIX      css/scss var prefix   (default "banxe")
  *   TOKEN_BASENAME    output file basename  (default "banxe" → "banxe-tokens.css")
  *
@@ -26,7 +26,7 @@ const buildPath = OUTPUT_DIR.endsWith("/") ? OUTPUT_DIR : OUTPUT_DIR + "/";
 
 // Domain-agnostic: factory must not hard-code a domain. Defaults preserve
 // current (BANXE) behaviour until tokens are migrated in S2b.
-const TOKEN_SOURCE = process.env.TOKEN_SOURCE || "banxe-tokens.json";
+const TOKEN_SOURCE = process.env.TOKEN_SOURCE || "tokens.example.json";
 const TOKEN_PREFIX = process.env.TOKEN_PREFIX || "banxe";
 const TOKEN_BASENAME = process.env.TOKEN_BASENAME || "banxe";
 

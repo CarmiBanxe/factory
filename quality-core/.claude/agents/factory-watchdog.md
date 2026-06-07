@@ -93,7 +93,7 @@ After code changes, before commit or PR creation. Equivalent to the pre-commit q
 | 5 | No hardcoded secrets | gitleaks on staged diff | 0 leaks |
 | 6 | Type hints present | all new/modified functions have param + return annotations | 100% annotated |
 | 7 | If API routes changed → proto-sync fresh | `python scripts/proto-sync.py --dry-run` (if proto-sync exists) | no stale components |
-| 8 | If tokens changed → style-dictionary regenerated | hash of `config/design-tokens/banxe-tokens.json` vs outputs | hashes consistent |
+| 8 | If tokens changed → style-dictionary regenerated | hash of configured token source `config/design-tokens/${TOKEN_SOURCE:-tokens.example.json}` vs outputs | hashes consistent |
 | 9 | Web typecheck (if `apps/web/` modified) | `cd apps/web && pnpm typecheck` | exit 0 |
 | 10 | Mobile typecheck (if `apps/mobile/` modified) | `cd apps/mobile && npx expo typecheck` | exit 0 |
 | 11 | Repo-override check | if `repo-overrides.yaml` exists, verify each override has Gap/ADR justification | all justified |
@@ -156,7 +156,7 @@ Scheduled (weekly via guardian.yml) or manual invocation.
 | 4 | Ruff base config | if repo uses `extend = "./quality/ruff-base.toml"` → verify base matches factory | hash match |
 | 5 | Coverage threshold | repo `COVERAGE_MIN` >= factory minimum (80%) | threshold not lowered without override |
 | 6 | Proto-sync version | if repo has `scripts/proto-sync.py` → SHA256 vs `factory/ui-sync-core/proto-sync.py` | hash match |
-| 7 | Design token source | if repo has `config/design-tokens/banxe-tokens.json` → SHA256 vs `factory/ui-sync-core/tokens/banxe-tokens.json` | hash match |
+| 7 | Design token source | if repo has configured token source `config/design-tokens/${TOKEN_SOURCE:-tokens.example.json}` → SHA256 vs `factory/ui-sync-core/tokens/${TOKEN_SOURCE:-tokens.example.json}` | hash match |
 | 8 | Style-dictionary JS-config | if repo has style-dictionary → SHA256 of `style-dictionary.config.js` (or `.mjs`) vs factory canonical, AND output `tokens.json` hash vs last build; both must match (JS-config drift = HIGH even if output coincidentally matches) | both hashes match |
 | 9 | Override legitimacy | every entry in `repo-overrides.yaml` has Gap/ADR reference | all justified |
 | 10 | Adapter completeness | repo has factory workflows if it's a factory-managed repo | all 3 workflows present |
@@ -205,7 +205,7 @@ Date: <date>  Repos scanned: <count>
 ### Inputs
 - `apps/web/components/` file tree
 - `apps/mobile/components/` file tree
-- `config/design-tokens/banxe-tokens.json` (canonical token source)
+- `config/design-tokens/${TOKEN_SOURCE:-tokens.example.json}` (configured token source)
 - `config/design-tokens/output/` (generated outputs)
 - `apps/web/tokens/` and `apps/mobile/tokens/` (platform-specific exports)
 - `ui-sync/repo-manifest.yaml` (which components are managed)
@@ -217,7 +217,7 @@ Date: <date>  Repos scanned: <count>
 | 1 | Component count parity | count `generated/` dirs in web vs mobile | equal counts |
 | 2 | Component name parity | list component dirs in web vs mobile | identical sorted lists |
 | 3 | Props interface parity | for each managed component, extract TypeScript props interface → compare | identical interfaces |
-| 4 | Token source freshness | mtime of `banxe-tokens.json` vs `output/tokens.json` | output newer than source |
+| 4 | Token source freshness | mtime of configured token source `${TOKEN_SOURCE:-tokens.example.json}` vs `output/tokens.json` | output newer than source |
 | 5 | Token output completeness | all 5 output formats exist (CSS, Tailwind, JSON, RN, SCSS) | all present |
 | 6 | Web token export valid | `apps/web/tokens/index.ts` imports from generated output | no stale refs |
 | 7 | Mobile token export valid | `apps/mobile/tokens/index.ts` values match generated `tokens.rn.ts` | values match |

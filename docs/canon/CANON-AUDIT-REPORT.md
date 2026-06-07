@@ -25,7 +25,7 @@ Canon version: 1.6.1
 | 12 | `factory/quality-core/workflows/lint-python.yml` | 2.2K | CI template |
 | 13 | `factory/ui-sync-core/.claude/agents/ui-sync.md` | 3.0K | Generation agent |
 | 14 | `factory/ui-sync-core/.claude/skills/lazyweb-research.md` | 6.7K | Research skill |
-| 15 | `factory/ui-sync-core/tokens/banxe-tokens.json` | 4.1K | Token source |
+| 15 | `factory/ui-sync-core/tokens/tokens.example.json` | 4.1K | Token format sample |
 | 16 | `factory/p1-summary.md` | 23K | Implementation guide |
 | 17 | `factory/rollout-v2-report.md` | 2.3K | Deployment log |
 
@@ -43,7 +43,7 @@ Canon version: 1.6.1
 | lint-python.yml | **primary** | — | — | — |
 | ui-sync.md | **primary** | — | — | — |
 | lazyweb-research.md | **primary** | — | — | — |
-| banxe-tokens.json | **primary** | — | — | — |
+| tokens.example.json | **primary** | — | — | — |
 | rollout-v2-report.md | **primary** | — | — | — |
 | p1-summary.md | — | — | **mixed** | — |
 
@@ -70,7 +70,7 @@ All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is
 2. **Enforcement chain complete** — Axiom → watchdog agent → semgrep rules → CI workflows → PR guard → remote guardian. No gap in enforcement path.
 3. **Factory/project separation clean** — factory owns templates and rules; repos consume via controlled copies with drift detection.
 4. **UI parity discipline layered** — ui-sync (generation) + lazyweb-research (advisory) + watchdog Mode 4 (enforcement). Three layers, no overlap, clear boundaries.
-5. **Token single-source** — `banxe-tokens.json` is the only token truth; style-dictionary generates platform outputs.
+5. **Token source project-defined** — token source is project-defined (TOKEN_SOURCE); factory ships `tokens.example.json` as a format sample. style-dictionary generates platform outputs from the configured source.
 
 ## 5. Weak Points
 
