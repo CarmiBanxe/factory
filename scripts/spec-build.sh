@@ -26,6 +26,7 @@ infer_spec_family() {
     *partnerport*contract*spec*.md) SPEC_FAMILY="emi-banking-partnerport-CONTRACT";;
     *crypto*ops*subgroup*spec*.md) SPEC_FAMILY="crypto-ops-subgroup";;
     *exchangeport*contract*spec*.md) SPEC_FAMILY="exchangeport-contract";;
+    *notification*port*contract*spec*.md) SPEC_FAMILY="notificationport-contract";;
     *) fail "Cannot infer spec_family from: $b";; esac
 }
 load_mapping() {

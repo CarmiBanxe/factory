@@ -4,3 +4,4 @@ kyc-provider-port	CarmiBanxe/banxe-emi-stack	contract-code	services/kyc/kyc_prov
 emi-banking-partnerport-CONTRACT	CarmiBanxe/banxe-payment-core	contract-code	src/partner/**	contract-only
 crypto-ops-subgroup	CarmiBanxe/banxe-payment-core	service-code	src/crypto-ops/**,tests/crypto-ops/**	ADR-015
 exchangeport-contract	CarmiBanxe/banxe-payment-core	contract-code	src/exchangeport/**	exchange contract pilot
+notificationport-contract	CarmiBanxe/banxe-emi-stack	contract-code	services/notifications/notification_provider_port.py	ADR-021/ADR-027
