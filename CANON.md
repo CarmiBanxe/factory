@@ -221,3 +221,35 @@ Current version: 1.6.1 (2026-06-06, Sprints 1-5: 25 L2 checks, 37 overrides, 31 
 - Terminal Central = produces BANXE code USING the factory.
 - Terminal B = smart refactor + new code, no conflict with Central.
 - MANDATORY: every terminal confirms its role before any work. "Who rules" is never asked.
+
+## Orchestration Requirements (Factory engine — universal)
+
+Requirements raised by the Central customer for the factory's orchestration engine.
+Two classes are kept strictly separate: what orchestration resolves (resource
+conflicts — schedulable) vs what it does not (semantic decisions — not schedulable).
+
+### Resolved by orchestration (resource conflicts — Terminal A builds this)
+
+- R1. Task queue: Central and B submit a build-request to the factory queue; they do
+      NOT run `claude`/`-p` directly in a shared bash. Direct execution in the shared
+      tree is forbidden by canon.
+- R2. Per-task isolation: each task runs in an ephemeral worktree/clone created
+      automatically (not a manual `git worktree add`). Base is `origin/main`; only
+      in-scope paths are staged.
+- R3. Lock/lease by resource: a lock on repo+branch; a conflicting task waits in the
+      queue instead of failing halfway.
+- R4. Serialize conflicting tasks (same repo/scope) + parallelize independent ones
+      (different repo/scope). A single source of truth for in-flight tasks.
+- R5. Auto-cleanup of dirty trees before a run (snapshot / stash-restore automatically).
+
+### Not resolved by orchestration (semantic — require decisions, not scheduling)
+
+- TS ↔ Python correspondence, coverage policy, broken tests (PSD2), webhook contracts (R3).
+  These are resolved on their merits; orchestration only separates them in time/resource.
+
+### Roles
+
+- Terminal A: designs and builds the orchestration engine (universal, domain-agnostic).
+- Central and B: consumers — they submit build-requests and never touch the shared bash.
+- Roadmap binding: Sprint 3 (worktree regulation + auto-cleanup),
+  Sprint 5 (golden path "task → artifact").
