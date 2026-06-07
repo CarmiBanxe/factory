@@ -1,28 +1,38 @@
-Canon version: 1.6.1
-Date: 2026-05-23
+Canon version: 1.7
+Date: 2026-06-07
 
 # Canon Topology — Factory Governance Structure
 
-**Date:** 2026-05-23
-**Authority:** `factory/CANON.md` v1.6.1 (Decision-Making Axiom + Extensions + Honest Reporting + enforcement Sprints 1-5)
+**Date:** 2026-06-07
+**Authority:** `factory/CANON.md` v1.7 (Decision-Making Axiom + Extensions + Honest Reporting + enforcement Sprints 1-7)
 
 ---
 
 ## 1. Canon Hierarchy
 
 ```
-factory/CANON.md                              ← LEVEL 0: foundational axiom
-├── factory/docs/canon/CANON-TOPOLOGY.md      ← LEVEL 1: governance structure (this file)
-├── factory/docs/canon/CANON-AUDIT-REPORT.md  ← LEVEL 1: audit findings
+factory/CANON.md                                      ← LEVEL 0: foundational axiom
+├── factory/docs/canon/CANON-TOPOLOGY.md              ← LEVEL 1: governance structure (this file)
+├── factory/docs/canon/CANON-AUDIT-REPORT.md          ← LEVEL 1: audit findings
 │
 ├── ENFORCEMENT AGENTS (LEVEL 2)
-│   ├── factory/.claude/agents/canon-guardian.md    ← canon document consistency
-│   ├── factory/quality-core/.claude/agents/factory-watchdog.md  ← quality + UI enforcement
-│   └── factory/ui-sync-core/.claude/agents/ui-sync.md          ← generation orchestration
+│   ├── factory/.claude/agents/canon-guardian.md      ← canon document consistency
+│   ├── factory/quality-core/.claude/agents/factory-watchdog.md   ← quality + UI enforcement
+│   └── factory/ui-sync-core/.claude/agents/ui-sync.md            ← generation orchestration
 │
 ├── OPERATIONAL RULES (LEVEL 2)
 │   ├── factory/docs/factory/FACTORY-CANON-ADDENDUM-TERMINAL-B-AUTONOMY-2026-05-12.md
 │   └── factory/ui-sync-core/.claude/skills/lazyweb-research.md
+│
+├── ORCHESTRATION ENGINE (LEVEL 2, Sprints 3-7, R1-R7)
+│   ├── factory/docs/S3-IMPL.md                       ← engine spec (R1-R7 acceptance criteria)
+│   ├── factory/docs/factory/COMPUTE-TOPOLOGY.md      ← compute topology (hosts/capacity/gateway), read by R6/R7
+│   └── factory/scripts/orchestrator/                 ← queue/worktree/lock/scheduler/cleanup/health (R1-R7)
+│
+├── DISTRIBUTION TEMPLATE (LEVEL 3)
+│   ├── factory/banxe-repo-template/README.md
+│   ├── factory/banxe-repo-template/.claude/settings.json
+│   └── factory/banxe-repo-template/.github/workflows/{claude,factory-guard,guardian}.yml
 │
 ├── ENFORCEMENT ARTIFACTS (LEVEL 3)
 │   ├── factory/quality-core/semgrep/fintech-rules.yml
@@ -31,11 +41,6 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 │   ├── factory/ui-sync-core/tokens/tokens.example.json
 │   ├── factory/ui-sync-core/tokens/style-dictionary.config.js
 │   └── factory/ui-sync-core/proto-sync.py
-│
-├── DISTRIBUTION TEMPLATE (LEVEL 3)
-│   ├── factory/banxe-repo-template/README.md
-│   ├── factory/banxe-repo-template/.claude/settings.json
-│   └── factory/banxe-repo-template/.github/workflows/{claude,factory-guard,guardian}.yml
 │
 └── OPERATIONAL RECORDS (LEVEL 4, read-only reference)
     ├── factory/p1-summary.md
@@ -78,6 +83,7 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 |---|---|---|
 | Decision-Making Axiom | Factory | `factory/CANON.md` |
 | Canon topology and audit | Factory | `factory/docs/canon/` |
+| Orchestration engine spec + compute topology | Factory | `factory/docs/S3-IMPL.md`, `factory/docs/factory/COMPUTE-TOPOLOGY.md` |
 | Quality rules (semgrep, ruff base) | Factory | `factory/quality-core/` |
 | UI generation and parity rules | Factory | `factory/ui-sync-core/` |
 | CI workflow templates | Factory | `factory/quality-core/workflows/` |
@@ -91,7 +97,6 @@ factory/CANON.md                              ← LEVEL 0: foundational axiom
 ## 4. Canon Change Procedure
 
 When `factory/CANON.md` is modified:
-
 1. Canon-guardian agent detects the change (Mode 1: source-change detection).
 2. Canon-guardian identifies all controlled copies via this topology.
 3. Canon-guardian proposes exactly one update (highest-priority copy first).
@@ -102,13 +107,11 @@ When `factory/CANON.md` is modified:
 ## 5. Canon Versioning
 
 `factory/CANON.md` must carry a version header:
-
 ```
 Canon version: X.Y
 Date: YYYY-MM-DD
 ```
-
 - Major (X): axiom added or removed.
 - Minor (Y): wording clarification, copy propagation, or topology change.
 
-Current version: **1.6.1** (2026-06-06, enforcement Sprints 1-5).
+Current version: **1.7** (2026-06-07, enforcement Sprints 1-7; adds orchestration engine R1-R7 + compute topology).
