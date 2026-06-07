@@ -18,7 +18,7 @@ R1–R5 are the resource-conflict engine. R6–R7 extend the engine to be comput
 - scripts/orchestrator/cleanup.sh — R5 snapshot/stash-restore of dirty trees.
 - scripts/orchestrator/health.sh — R7 model-gateway health probe (read-only, fail-closed).
 - config/orchestrator.queue.tsv — persisted queue state (task_id, repo, branch, scope, status, lease_owner, ts).
-- docs/COMPUTE-TOPOLOGY.md — canonical compute topology (hosts/capacity/gateway) read by R6/R7.
+- docs/factory/COMPUTE-TOPOLOGY.md — canonical compute topology (hosts/capacity/gateway) read by R6/R7.
 
 ## Requirements -> acceptance criteria
 
