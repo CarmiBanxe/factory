@@ -6,9 +6,17 @@
  * JS format required — Style Dictionary JSON configs do not support
  * environment variable interpolation. JS enables TOKEN_OUTPUT_DIR override.
  *
+ * Environment overrides (defaults keep current behaviour):
+ *   TOKEN_OUTPUT_DIR  output dir            (default "tokens/output/")
+ *   TOKEN_SOURCE      source token file     (default "banxe-tokens.json")
+ *   TOKEN_PREFIX      css/scss var prefix   (default "banxe")
+ *   TOKEN_BASENAME    output file basename  (default "banxe" → "banxe-tokens.css")
+ *
  * Usage:
  *   npx style-dictionary build --config tokens/style-dictionary.config.js
  *   TOKEN_OUTPUT_DIR=dist/tokens/ npx style-dictionary build --config tokens/style-dictionary.config.js
+ *   TOKEN_SOURCE=foo-tokens.json TOKEN_PREFIX=foo TOKEN_BASENAME=foo \
+ *     npx style-dictionary build --config tokens/style-dictionary.config.js
  */
 
 const path = require("path");
@@ -16,16 +24,22 @@ const path = require("path");
 const OUTPUT_DIR = process.env.TOKEN_OUTPUT_DIR || "tokens/output/";
 const buildPath = OUTPUT_DIR.endsWith("/") ? OUTPUT_DIR : OUTPUT_DIR + "/";
 
+// Domain-agnostic: factory must not hard-code a domain. Defaults preserve
+// current (BANXE) behaviour until tokens are migrated in S2b.
+const TOKEN_SOURCE = process.env.TOKEN_SOURCE || "banxe-tokens.json";
+const TOKEN_PREFIX = process.env.TOKEN_PREFIX || "banxe";
+const TOKEN_BASENAME = process.env.TOKEN_BASENAME || "banxe";
+
 module.exports = {
-  source: [path.join(__dirname, "banxe-tokens.json")],
+  source: [path.join(__dirname, TOKEN_SOURCE)],
   platforms: {
     css: {
       transformGroup: "css",
-      prefix: "banxe",
+      prefix: TOKEN_PREFIX,
       buildPath,
       files: [
         {
-          destination: "banxe-tokens.css",
+          destination: `${TOKEN_BASENAME}-tokens.css`,
           format: "css/variables",
           options: { outputReferences: true, selector: ":root" },
         },
@@ -65,7 +79,7 @@ module.exports = {
     },
     scss: {
       transformGroup: "scss",
-      prefix: "banxe",
+      prefix: TOKEN_PREFIX,
       buildPath,
       files: [
         {
