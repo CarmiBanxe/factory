@@ -53,6 +53,12 @@ for f in "${CONTROLLED_FILES[@]}"; do
   [ -f "$f" ] || { echo "ERROR: controlled file missing in factory: $f" >&2; exit 1; }
 done
 
+# Role-anchor (separate artifact, NOT a controlled canon copy): downstream bank
+# repos are Central-zone, so the Central anchor lands as TERMINAL-ROLE.md in root.
+ROLE_ANCHOR_SRC="role-anchors/TERMINAL-ROLE-CENTRAL.md"
+ROLE_ANCHOR_DEST="TERMINAL-ROLE.md"
+[ -f "$ROLE_ANCHOR_SRC" ] || { echo "ERROR: role-anchor missing in factory: $ROLE_ANCHOR_SRC" >&2; exit 1; }
+
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 BRANCH="canon-pin/$VERSION"
@@ -80,6 +86,13 @@ for f in "${CONTROLLED_FILES[@]}"; do
   fi
 done
 
+echo "== Copying role-anchor (Central) =="
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "[dry-run] copy $ROLE_ANCHOR_SRC -> $TARGET/$ROLE_ANCHOR_DEST"
+else
+  cp "$FACTORY_ROOT/$ROLE_ANCHOR_SRC" "$WORK/repo/$ROLE_ANCHOR_DEST"
+fi
+
 PIN_FILE=".factory-canon-version"
 MIRROR_WF=".github/workflows/canon-mirror-check.yml"
 
@@ -106,6 +119,7 @@ on:
       - '.clauderules'
       - '.factory-canon-version'
       - 'docs/canon/**'
+      - 'TERMINAL-ROLE.md'
   push:
     branches: [main]
 permissions:
@@ -122,6 +136,8 @@ jobs:
           test -s .factory-canon-version || { echo "::error::.factory-canon-version missing or empty"; exit 1; }
           test -s CANON.md || { echo "::error::CANON.md missing or empty"; exit 1; }
           test -s .clauderules || { echo "::error::.clauderules missing or empty"; exit 1; }
+          test -s TERMINAL-ROLE.md || { echo "::error::TERMINAL-ROLE.md missing or empty"; exit 1; }
+          grep -q "Terminal Central" TERMINAL-ROLE.md || { echo "::error::TERMINAL-ROLE.md is not a Central role anchor"; exit 1; }
           ver="$(cat .factory-canon-version)"
           echo "Pinned Factory canon version: $ver"
           grep -q "Decision-Making Axiom" CANON.md || { echo "::error::CANON.md missing Decision-Making Axiom"; exit 1; }
@@ -134,7 +150,7 @@ for stale in .github/workflows/canon-guardian.yml .github/workflows/canon-guardi
   [ -f "$stale" ] && git rm -f "$stale" || true
 done
 git checkout -b "$BRANCH"
-git add "${CONTROLLED_FILES[@]}" "$PIN_FILE" "$MIRROR_WF"
+git add "${CONTROLLED_FILES[@]}" "$ROLE_ANCHOR_DEST" "$PIN_FILE" "$MIRROR_WF"
 git commit -m "chore(canon): pin Factory canon $VERSION (downstream mirror)
 
 Distributes Factory reference controlled copies + lightweight
