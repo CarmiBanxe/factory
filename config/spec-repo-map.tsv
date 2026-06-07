@@ -5,3 +5,4 @@ emi-banking-partnerport-CONTRACT	CarmiBanxe/banxe-payment-core	contract-code	src
 crypto-ops-subgroup	CarmiBanxe/banxe-payment-core	service-code	src/crypto-ops/**,tests/crypto-ops/**	ADR-015
 exchangeport-contract	CarmiBanxe/banxe-payment-core	contract-code	src/exchangeport/**	exchange contract pilot
 notificationport-contract	CarmiBanxe/banxe-emi-stack	contract-code	services/notifications/notification_provider_port.py	ADR-021/ADR-027
+crmport-contract	CarmiBanxe/banxe-emi-stack	contract-code	services/crm/crm_provider_port.py	ADR-021/C10
