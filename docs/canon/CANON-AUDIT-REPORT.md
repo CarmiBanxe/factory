@@ -1,9 +1,9 @@
 # Canon Audit Report — Factory Governance
 
-**Date:** 2026-06-06 (version-sync to v1.6.1; Sprints 1-5 enforcement)
-Canon version: 1.6.1
+**Date:** 2026-06-07 (version-sync to v1.7; Sprints 1-7 enforcement)
+Canon version: 1.7
 **Scope:** `/home/mmber/factory/` (factory-level only, no bank repos)
-**Method:** Full read of all 17 canon-bearing files (~95 KB)
+**Method:** Full read of all canon-bearing files (~95 KB) + Sprint 3-7 orchestration engine artifacts (R1-R7)
 
 ---
 
@@ -28,6 +28,9 @@ Canon version: 1.6.1
 | 15 | `factory/ui-sync-core/tokens/tokens.example.json` | 4.1K | Token format sample |
 | 16 | `factory/p1-summary.md` | 23K | Implementation guide |
 | 17 | `factory/rollout-v2-report.md` | 2.3K | Deployment log |
+| 18 | `factory/docs/S3-IMPL.md` | ~11K | Orchestration engine spec (R1-R7) |
+| 19 | `factory/docs/factory/COMPUTE-TOPOLOGY.md` | — | Compute topology (hosts/capacity/gateway), read by R6/R7 |
+| 20 | `factory/scripts/orchestrator/*` + `factory/tests/orchestrator/*` | — | Engine impl + Gate A tests (R1-R7) |
 
 ## 2. Classification Table
 
@@ -45,15 +48,15 @@ Canon version: 1.6.1
 | lazyweb-research.md | **primary** | — | — | — |
 | tokens.example.json | **primary** | — | — | — |
 | rollout-v2-report.md | **primary** | — | — | — |
+| S3-IMPL.md + orchestrator engine (R1-R7) | **primary** | — | — | — |
+| COMPUTE-TOPOLOGY.md | **primary** | — | — | — |
 | p1-summary.md | — | — | **mixed** | — |
 
-**Result:** 16 of 17 files are pure factory-governance. 1 file (`p1-summary.md`) is mixed — contains factory-level recommendations interleaved with bank-project-specific implementation details (hooks for `banxe-payment-core`, subagents for `banxe-ui`, MCPs for `banxe-infra`). <!-- META-MENTION-OK -->
+**Result:** All factory-governance files are internally consistent. The orchestration engine (R1-R7) is universal factory tooling and embeds no BANXE-domain logic. 1 file (`p1-summary.md`) remains mixed (frozen, see Weak Point #2).
 
 ## 3. Conflict Map
 
-**No conflicts detected between any files.**
-
-All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is respected or explicitly restated in every agent spec and operational doc. No file contradicts another.
+**No conflicts detected between any files.** All files are internally consistent. The Decision-Making Axiom in CANON.md is respected or explicitly restated in every agent spec and operational doc. No file contradicts another.
 
 **Intentional duplications (acceptable):**
 
@@ -71,23 +74,36 @@ All 17 files are internally consistent. The Decision-Making Axiom in CANON.md is
 3. **Factory/project separation clean** — factory owns templates and rules; repos consume via controlled copies with drift detection.
 4. **UI parity discipline layered** — ui-sync (generation) + lazyweb-research (advisory) + watchdog Mode 4 (enforcement). Three layers, no overlap, clear boundaries.
 5. **Token source project-defined** — token source is project-defined (TOKEN_SOURCE); factory ships `tokens.example.json` as a format sample. style-dictionary generates platform outputs from the configured source.
+6. **Orchestration engine canonized (R1-R7)** — resource-conflict (R1-R5) + compute-aware (R6) + gateway health-gate (R7); Gate A dry-run precedes Gate B; per-task worktree isolation; fail-closed role guard.
 
 ## 5. Weak Points
 
 1. ~~**No dedicated canon-enforcement agent.**~~ **RESOLVED v1.0** — `factory/.claude/agents/canon-guardian.md` created with 4 modes.
-
-2. ~~**`p1-summary.md` is mixed.**~~ **RESOLVED v1.3** — bank-specifics frozen at `docs/history/p1-summary-bank.md` <!-- META-MENTION-OK -->; factory-level patterns migrated into `docs/canon/PATTERNS.md` (hook, subagent, CI workflow, MCP, skill, PR review patterns; each anchored to a CANON.md v1.3 section).
-
-3. ~~**No canon versioning.**~~ **RESOLVED v1.0** — CANON.md carries `Canon version: 1.3, Date: 2026-05-23`.
-
+2. ~~**`p1-summary.md` is mixed.**~~ **RESOLVED v1.3** — bank-specifics frozen at `docs/history/p1-summary-bank.md`; factory-level patterns migrated into `docs/canon/PATTERNS.md`.
+3. ~~**No canon versioning.**~~ **RESOLVED v1.0** — CANON.md carries a version header.
 4. ~~**No canon diff policy.**~~ **RESOLVED v1.0** — CANON-TOPOLOGY.md §4 defines change procedure.
+5. ~~**`style-dictionary.config.js` not in audit scope of any agent.**~~ **RESOLVED v1.7** — factory-watchdog Mode 3 check #8 now carries explicit JS-config drift logic: SHA256 of `style-dictionary.config.js` (or `.mjs`) vs factory canonical AND output `tokens.json` hash vs last build; JS-config drift is HIGH severity even if output coincidentally matches. (Prior YELLOW was a stale audit note; the verification logic was already present.)
+6. ~~**Orchestration engine not in audit inventory.**~~ **RESOLVED v1.7** — S3-IMPL.md (R1-R7), COMPUTE-TOPOLOGY.md, and scripts/tests orchestrator added to inventory §1 and topology hierarchy.
 
-5. **`style-dictionary.config.js` not in audit scope of any agent.** **YELLOW** — now listed in CANON-TOPOLOGY.md hierarchy, but factory-watchdog Mode 3 check #8 references it without explicit JS config drift verification logic.
+## 6. Recommendations (status)
 
-## 6. Recommendations
+1. ~~Create `canon-guardian.md`.~~ Done.
+2. ~~Create `CANON-TOPOLOGY.md`.~~ Done.
+3. ~~Add version/date header to CANON.md.~~ Done.
+4. ~~Split `p1-summary.md`.~~ Done.
+5. ~~Define canon diff propagation procedure.~~ Done (CANON-TOPOLOGY §4).
+6. **Next (Sprint 7+):** R8 = engine observability / execution audit-trail (structured Gate A plan logs + per-host metrics, read-only, no mutation).
 
-1. Create `factory/.claude/agents/canon-guardian.md` — dedicated agent for canon document consistency enforcement.
-2. Create `factory/docs/canon/CANON-TOPOLOGY.md` — defines which files are canon sources vs copies vs mirrors.
-3. Add version/date header to CANON.md.
-4. Split `p1-summary.md`: extract reusable factory patterns into `factory/docs/canon/`, leave bank-specific items as historical reference.
-5. Define canon diff propagation procedure in CANON-TOPOLOGY.md.
+## 7. Orchestration Engine Status (R1-R7)
+
+| Req | Capability | State |
+|---|---|---|
+| R1 | Task queue intake | GREEN (impl + t_r1_queue.sh) |
+| R2 | Per-task worktree isolation | GREEN (impl + t_r2_worktree.sh) |
+| R3 | Repo+branch lock/lease | GREEN (impl + t_r3_lock.sh) |
+| R4 | Serialize/parallelize | GREEN (impl + t_r4_schedule.sh) |
+| R5 | Auto-cleanup (stash/restore) | GREEN (impl + t_r5_cleanup.sh) |
+| R6 | Compute-aware scheduling | GREEN (scheduler + t_r6_compute_schedule.sh; reads COMPUTE-TOPOLOGY.md) |
+| R7 | Model-gateway health gate | GREEN (health.sh + t_r7_gateway_gate.sh; fail-closed on missing .TERMINAL-ROLE) |
+
+Gate discipline: Gate A (DRY_RUN dry-run, no main mutation) precedes Gate B merge; Canon Guardian must be green before Gate B. All R1-R7 landed via this discipline.
