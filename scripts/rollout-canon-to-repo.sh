@@ -119,6 +119,7 @@ on:
       - '.clauderules'
       - '.factory-canon-version'
       - 'docs/canon/**'
+      - 'TERMINAL-ROLE.md'
   push:
     branches: [main]
 permissions:
@@ -135,6 +136,8 @@ jobs:
           test -s .factory-canon-version || { echo "::error::.factory-canon-version missing or empty"; exit 1; }
           test -s CANON.md || { echo "::error::CANON.md missing or empty"; exit 1; }
           test -s .clauderules || { echo "::error::.clauderules missing or empty"; exit 1; }
+          test -s TERMINAL-ROLE.md || { echo "::error::TERMINAL-ROLE.md missing or empty"; exit 1; }
+          grep -q "Terminal Central" TERMINAL-ROLE.md || { echo "::error::TERMINAL-ROLE.md is not a Central role anchor"; exit 1; }
           ver="$(cat .factory-canon-version)"
           echo "Pinned Factory canon version: $ver"
           grep -q "Decision-Making Axiom" CANON.md || { echo "::error::CANON.md missing Decision-Making Axiom"; exit 1; }
