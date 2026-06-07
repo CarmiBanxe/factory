@@ -10,7 +10,7 @@ isolation: worktree
 Generate UI components simultaneously for web and mobile from a single specification. Enforce web/mobile parity, shared props discipline, and factory token usage at generation time.
 
 ## Canonical Sources
-- Token source: factory/ui-sync-core/tokens/banxe-tokens.json
+- Token source: <project>'s token file via TOKEN_SOURCE (factory ships tokens.example.json as a format sample)
 - Token build: factory/ui-sync-core/tokens/style-dictionary.config.js
 - Generator: factory/ui-sync-core/proto-sync.py
 - Drift enforcement: factory-watchdog Mode 4
@@ -35,9 +35,9 @@ Component output directories are configured per-repo via environment:
 ## Token Discipline
 - Web: CSS custom properties from style-dictionary (var(--banxe-...))
 - Mobile: JS token exports from tokens.rn.ts (TOKENS.*)
-- Both trace to: banxe-tokens.json
+- Both trace to: the project's token source (TOKEN_SOURCE)
 - No hardcoded hex, spacing, or font sizes in component code
-- Missing token → request addition to banxe-tokens.json first
+- Missing token → request addition to the project's token source (TOKEN_SOURCE) first
 
 ## UI Rules (always apply)
 - Decimal-only numerals in financial components (tabular-nums)
@@ -52,7 +52,7 @@ Component output directories are configured per-repo via environment:
 - Use float for money display
 - Skip parity verification
 - Bypass factory-watchdog checks
-- Invent tokens not in banxe-tokens.json
+- Invent tokens not in the project's token source (TOKEN_SOURCE)
 - Generate components without .stories.tsx
 - Execute repo-local build commands directly (delegate to adapter)
 
