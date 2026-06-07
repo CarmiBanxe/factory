@@ -1,6 +1,28 @@
 Canon version: 1.6.1
 Date: 2026-05-23
 
+## IDEOLOGY (immutable core)
+
+1. Two levels of being: a universal factory vs a domain project. The factory is
+   configured by the project but never hard-codes the domain into itself.
+2. Fork Policy: forking functions/blocks/AI-agents between factory and project is
+   ALLOWED and encouraged. The criterion is "the best solution" and expediency.
+   A duplicate is not an error.
+3. Dual-based AI-agents: a base agent lives in the factory, its domain fork lives
+   in the project.
+4. Three terminals: A = factory, Central = domain project, B = refactor
+   (B never touches the factory).
+5. Gates: Gate A = dry-run, Gate B = actual + validate + green. Blocked gates are
+   not auto-repaired without an explicit request.
+6. Isolation by worktree-path + role-anchors in every worktree.
+
+### Allowed Forks
+
+- Orchestration (engine ↔ config).
+- factory-watchdog (universal ↔ project-specific).
+- Observability.
+- AI-agents (base in factory ↔ domain fork in project).
+
 ## Decision-Making Axiom (Canon)
 
 1. Always select the globally optimal solution among all admissible options.
@@ -193,3 +215,41 @@ Current version: 1.6.1 (2026-06-06, Sprints 1-5: 25 L2 checks, 37 overrides, 31 
 7. RED-OPEN (updated v1.6.1)
    - RESOLVED v1.6.1: all three downstream bank repositories pinned to Factory canon v1.6.1 (verified .factory-canon-version on default branches).
    - Perplexity transition packet anchoring not technically verified (out-of-scope for factory automation; requires external infrastructure).
+
+## TERMINAL ROLES (three-terminal canon)
+- Terminal A = FACTORY only (improve/upgrade the factory; no BANXE code).
+- Terminal Central = produces BANXE code USING the factory.
+- Terminal B = smart refactor + new code, no conflict with Central.
+- MANDATORY: every terminal confirms its role before any work. "Who rules" is never asked.
+
+## Orchestration Requirements (Factory engine — universal)
+
+Requirements raised by the Central customer for the factory's orchestration engine.
+Two classes are kept strictly separate: what orchestration resolves (resource
+conflicts — schedulable) vs what it does not (semantic decisions — not schedulable).
+
+### Resolved by orchestration (resource conflicts — Terminal A builds this)
+
+- R1. Task queue: Central and B submit a build-request to the factory queue; they do
+      NOT run `claude`/`-p` directly in a shared bash. Direct execution in the shared
+      tree is forbidden by canon.
+- R2. Per-task isolation: each task runs in an ephemeral worktree/clone created
+      automatically (not a manual `git worktree add`). Base is `origin/main`; only
+      in-scope paths are staged.
+- R3. Lock/lease by resource: a lock on repo+branch; a conflicting task waits in the
+      queue instead of failing halfway.
+- R4. Serialize conflicting tasks (same repo/scope) + parallelize independent ones
+      (different repo/scope). A single source of truth for in-flight tasks.
+- R5. Auto-cleanup of dirty trees before a run (snapshot / stash-restore automatically).
+
+### Not resolved by orchestration (semantic — require decisions, not scheduling)
+
+- TS ↔ Python correspondence, coverage policy, broken tests (PSD2), webhook contracts (R3).
+  These are resolved on their merits; orchestration only separates them in time/resource.
+
+### Roles
+
+- Terminal A: designs and builds the orchestration engine (universal, domain-agnostic).
+- Central and B: consumers — they submit build-requests and never touch the shared bash.
+- Roadmap binding: Sprint 3 (worktree regulation + auto-cleanup),
+  Sprint 5 (golden path "task → artifact").

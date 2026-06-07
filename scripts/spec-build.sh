@@ -26,6 +26,7 @@ infer_spec_family() {
     *partnerport*contract*spec*.md) SPEC_FAMILY="emi-banking-partnerport-CONTRACT";;
     *crypto*ops*subgroup*spec*.md) SPEC_FAMILY="crypto-ops-subgroup";;
     *exchangeport*contract*spec*.md) SPEC_FAMILY="exchangeport-contract";;
+    *notification*port*contract*spec*.md) SPEC_FAMILY="notificationport-contract";;
     *) fail "Cannot infer spec_family from: $b";; esac
 }
 load_mapping() {
@@ -96,7 +97,7 @@ run_agent() {
   [[ -f "$pf" ]] || fail "Prompt missing: $pf"
   if [[ $DRY_RUN -eq 1 ]]; then
     { echo "DRY_RUN agent=$name cwd=$cwd scope=$ALLOWED_SCOPE"
-      case "$name" in architect) echo "READY";; reviewer) echo "APPROVED FOR CANON-GUARDIAN";; canon-guardian) echo "PASS";; esac
+      case "$name" in architect) echo "READY";; reviewer) echo "APPROVED FOR CANON-GUARDIAN";; canon-guardian) echo "PASS";; factory-watchdog) echo "GREEN";; esac
     } > "$of"; return 0; fi
   ( cd "$cwd" && claude --agent "$name" -p "$(cat "$pf")" ) > "$of" || fail "Agent failed: $name"
 }
@@ -168,6 +169,28 @@ stage2_developer() {
   mk_dev; run_agent developer "$TMP_DIR/d.prompt" "$TMP_DIR/d.out" "$TARGET_REPO_DIR"
 }
 stage3_reviewer() { log "STAGE 3 — reviewer"; mk_rev; run_agent reviewer "$TMP_DIR/r.prompt" "$TMP_DIR/r.out" "$TARGET_REPO_DIR"; grep -qi "APPROVED FOR CANON-GUARDIAN" "$TMP_DIR/r.out" || fail "Reviewer not approved"; }
+stage4_watchdog() {
+  log "STAGE 4 — factory-watchdog (bank-project gate: semgrep fintech-rules + ruff)"
+  [[ -f "$ROOT_DIR/quality-core/.claude/agents/factory-watchdog.md" ]] || fail "Missing agent: factory-watchdog.md"
+  if [[ $DRY_RUN -eq 1 ]]; then log "DRY-RUN: watchdog checks skipped (would gate $TARGET_REPO_DIR)"; echo "GREEN" > "$TMP_DIR/g.out"; return 0; fi
+  local rules="$ROOT_DIR/quality-core/semgrep/fintech-rules.yml"
+  [[ -f "$rules" ]] || fail "fintech-rules.yml not found: $rules"
+  require_cmd semgrep; require_cmd ruff
+  # Проверяем ТОЛЬКО сгенерированные in-scope файлы в target
+  log "watchdog: ruff check (in-scope)"
+  ( cd "$TARGET_REPO_DIR" && ruff check $ALLOWED_SCOPE ) || fail "Watchdog RED: ruff findings in scope"
+  log "watchdog: semgrep fintech-rules (ERROR severity)"
+  ( cd "$TARGET_REPO_DIR" && semgrep --config "$rules" --error --quiet $ALLOWED_SCOPE ) || fail "Watchdog RED: semgrep fintech-rules findings"
+  echo "GREEN" > "$TMP_DIR/g.out"
+  log "Stage 4 GREEN (factory-watchdog)"
+}
+stage4_route() {
+  case "$OUTPUT_TYPE" in
+    contract-code|service-code) stage4_watchdog;;
+    *) stage4_guardian;;
+  esac
+}
+
 stage4_guardian() { log "STAGE 4 — canon-guardian"; mk_guard; run_agent canon-guardian "$TMP_DIR/g.prompt" "$TMP_DIR/g.out" "$ROOT_DIR"; grep -qi "PASS" "$TMP_DIR/g.out" && ! grep -qi "FAIL" "$TMP_DIR/g.out" || fail "Guardian not PASS"; }
 stage5_branch_pr() {
   log "STAGE 5 — branch + PR"
@@ -193,7 +216,7 @@ main() {
   parse_args "$@"; infer_spec_family; load_mapping; preflight_agents
   stage0_readiness; fetch_spec_to_tmp; prepare_target_branch
   stage1_architect; preflight_target_clean; stage2_developer; enforce_scope
-  stage3_reviewer; stage4_guardian; stage5_branch_pr
+  stage3_reviewer; stage4_route; stage5_branch_pr
   log "DONE — $SPEC_FAMILY mode=$([[ $DRY_RUN -eq 1 ]] && echo dry-run || echo real)"
 }
 main "$@"
