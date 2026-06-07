@@ -1,9 +1,9 @@
 # Canon Audit Report — Factory Governance
 
-**Date:** 2026-06-07 (version-sync to v1.7; Sprints 1-7 enforcement)
-Canon version: 1.7
+**Date:** 2026-06-07 (version-sync to v1.7; Sprints 1-5 enforcement)
+Canon version: 1.6.1 (target 1.7 — sync in progress; CANON.md not yet bumped)
 **Scope:** `/home/mmber/factory/` (factory-level only, no bank repos)
-**Method:** Full read of all canon-bearing files (~95 KB) + Sprint 3-7 orchestration engine artifacts (R1-R7)
+**Method:** Full read of all canon-bearing files (~95 KB) + Sprint 3-5 orchestration engine artifacts (R1-R5)
 
 ---
 
@@ -28,9 +28,9 @@ Canon version: 1.7
 | 15 | `factory/ui-sync-core/tokens/tokens.example.json` | 4.1K | Token format sample |
 | 16 | `factory/p1-summary.md` | 23K | Implementation guide |
 | 17 | `factory/rollout-v2-report.md` | 2.3K | Deployment log |
-| 18 | `factory/docs/S3-IMPL.md` | ~11K | Orchestration engine spec (R1-R7) |
-| 19 | `factory/docs/factory/COMPUTE-TOPOLOGY.md` | — | Compute topology (hosts/capacity/gateway), read by R6/R7 |
-| 20 | `factory/scripts/orchestrator/*` + `factory/tests/orchestrator/*` | — | Engine impl + Gate A tests (R1-R7) |
+| 18 | `factory/docs/S3-IMPL.md` | ~11K | Orchestration engine spec (R1-R5) |
+| 19 | `factory/docs/factory/COMPUTE-TOPOLOGY.md` | — | Compute topology (hosts/capacity/gateway) — informational, not bound to canon R-set |
+| 20 | `factory/scripts/orchestrator/*` + `factory/tests/orchestrator/*` | — | Engine impl + Gate A tests (R1-R5) |
 
 ## 2. Classification Table
 
